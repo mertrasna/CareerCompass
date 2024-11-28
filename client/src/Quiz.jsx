@@ -1,7 +1,26 @@
-import React, { useState } from "react";
+import Cookies from 'js-cookie';
+import React, { useState } from 'react';
+import axios from 'axios'; // 
+
+
+// Replace with your Adzuna App ID and API Key
+const appId = "6e1ce45d";
+const apiKey = "9939d5235fd78dee6f4aa9cf2b239580";
 
 function Quiz() {
-  // Sample questions for the 16 Personalities Quiz
+  // Mapping personality types to job-related keywords
+  const jobKeywords = {
+    ENTP: ["entrepreneur", "product manager", "consultant", "marketing", "startup"],
+    ENFJ: ["teacher", "counselor", "public relations", "event planner"],
+    INTJ: ["scientist", "software developer", "engineer", "philosopher"],
+    INFP: ["writer", "artist", "psychologist", "social worker"],
+    ESTJ: ["project manager", "banker", "administrator", "judge"],
+    ISFP: ["musician", "artist", "photographer", "interior designer"],
+    ISTP: ["mechanic", "engineer", "architect", "surgeon"],
+    INFJ: ["psychiatrist", "therapist", "writer", "advocate"],
+    // Add more personality types and corresponding job keywords as needed
+  };
+
   const questions = [
     {
       question: "You enjoy vibrant social events with lots of people.",
@@ -10,147 +29,146 @@ function Quiz() {
         { text: "Agree", value: 1 },
         { text: "Neutral", value: 0 },
         { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
+        { text: "Strongly Disagree", value: -2 },
       ],
-      category: "E" // Extraversion vs. Introversion
     },
     {
-      question: "You often spend time exploring unrealistic yet intriguing ideas.",
-      options: [
-        { text: "Strongly Agree", value: 2 },
-        { text: "Agree", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
-      ],
-      category: "N" // Intuition vs. Sensing
-    },
-    {
-      question: "You often prefer to spend time with a few close friends rather than in large groups.",
+      question: "You prefer to focus on facts and details rather than abstract concepts.",
       options: [
         { text: "Strongly Agree", value: -2 },
         { text: "Agree", value: -1 },
         { text: "Neutral", value: 0 },
         { text: "Disagree", value: 1 },
-        { text: "Strongly Disagree", value: 2 }
+        { text: "Strongly Disagree", value: 2 },
       ],
-      category: "E" // Extraversion vs. Introversion
     },
     {
-      question: "You enjoy abstract theories and concepts, even if they are not immediately practical.",
+      question: "You make decisions based more on logic than personal feelings.",
       options: [
         { text: "Strongly Agree", value: 2 },
         { text: "Agree", value: 1 },
         { text: "Neutral", value: 0 },
         { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
+        { text: "Strongly Disagree", value: -2 },
       ],
-      category: "N" // Intuition vs. Sensing
     },
     {
-      question: "You tend to focus on facts and details rather than big-picture ideas.",
-      options: [
-        { text: "Strongly Agree", value: -2 },
-        { text: "Agree", value: -1 },
-        { text: "Neutral", value: 0 },
-        { text: "Disagree", value: 1 },
-        { text: "Strongly Disagree", value: 2 }
-      ],
-      category: "S" // Sensing vs. Intuition
-    },
-    {
-      question: "You often follow your emotions rather than logic in making decisions.",
+      question: "You prefer a planned, organized approach to life.",
       options: [
         { text: "Strongly Agree", value: 2 },
         { text: "Agree", value: 1 },
         { text: "Neutral", value: 0 },
         { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
+        { text: "Strongly Disagree", value: -2 },
       ],
-      category: "F" // Feeling vs. Thinking
     },
-    {
-      question: "You prefer a structured and organized approach to life over a spontaneous one.",
-      options: [
-        { text: "Strongly Agree", value: 2 },
-        { text: "Agree", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
-      ],
-      category: "J" // Judging vs. Perceiving
-    },
-    {
-      question: "You enjoy having a wide variety of activities and interests.",
-      options: [
-        { text: "Strongly Agree", value: 2 },
-        { text: "Agree", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
-      ],
-      category: "P" // Perceiving vs. Judging
-    },
-    {
-      question: "You tend to make decisions quickly without overthinking them.",
-      options: [
-        { text: "Strongly Agree", value: 2 },
-        { text: "Agree", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
-      ],
-      category: "J" // Judging vs. Perceiving
-    },
-    {
-      question: "You find it easy to empathize with others and understand their feelings.",
-      options: [
-        { text: "Strongly Agree", value: 2 },
-        { text: "Agree", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Disagree", value: -1 },
-        { text: "Strongly Disagree", value: -2 }
-      ],
-      category: "F" // Feeling vs. Thinking
-    }
   ];
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState({});
+  const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [personalityType, setPersonalityType] = useState("");
+  const [jobSuggestions, setJobSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Handle option selection
-  const handleOptionClick = (value, category) => {
-    setResponses({ ...responses, [category]: (responses[category] || 0) + value });
+  const handleOptionClick = (value) => {
+    setResponses([...responses, value]);
 
-    // Move to the next question
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      calculatePersonalityType();
       setShowResult(true);
+      fetchJobSuggestions();
     }
   };
 
-  // Calculate personality type based on responses
-  const calculatePersonalityType = () => {
-    const types = [
-      responses.E >= 0 ? "E" : "I",
-      responses.N >= 0 ? "N" : "S",
-      responses.F >= 0 ? "F" : "T",
-      responses.J >= 0 ? "J" : "P"
-    ];
-    setPersonalityType(types.join(""));
+  const fetchJobSuggestions = async () => {
+    setLoading(true);
+
+    // Calculate personality type based on responses
+    const personalityType = calculatePersonalityType();
+    const keywords = jobKeywords[personalityType] || [];
+    savePersonalityType(personalityType);
+
+    try {
+      // Join keywords into a string to use in the API query
+      const keywordQuery = keywords.join(","); // Example: "entrepreneur, consultant, marketing"
+      
+      // Fetch job listings from Adzuna API using the keyword query
+      const response = await fetch(
+        `http://api.adzuna.com/v1/api/jobs/gb/search/1?app_id=${appId}&app_key=${apiKey}&results_per_page=10&what=${keywordQuery}&content-type=application/json`
+      );
+
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        setJobSuggestions(data.results);
+      } else {
+        setJobSuggestions([]);
+      }
+    } catch (error) {
+      console.error("Error fetching job suggestions:", error);
+      setJobSuggestions([]);
+    }
+
+    setLoading(false);
   };
 
-  // Progress calculation
+  const savePersonalityType = async (personalityType) => {
+    try {
+      // Retrieve username from cookies
+      const username = Cookies.get('username');  // Assuming 'username' is stored in cookies
+  
+      if (!username) {
+        console.error("Username not found in cookies.");
+        return;
+      }
+  
+      // Make an Axios POST request to save the personality type
+      await axios.post('http://localhost:3001/api/savePersonalityType', {
+        username,
+        personalityType,
+      });
+  
+      console.log("Personality type saved successfully!");
+    } catch (error) {
+      console.error("Error saving personality type:", error);
+    }
+  };
+  
+
+  const calculatePersonalityType = () => {
+    // Logic to calculate personality type (e.g., ENTP, INTJ, etc.) based on quiz responses
+    const types = [
+      responses[0] >= 0 ? "E" : "I", // Extraverted vs Introverted
+      responses[1] >= 0 ? "N" : "S", // Intuitive vs Sensing
+      responses[2] >= 0 ? "T" : "F", // Thinking vs Feeling
+      responses[3] >= 0 ? "J" : "P", // Judging vs Perceiving
+    ];
+    return types.join("");
+  };
+
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   if (showResult) {
     return (
       <div style={styles.container}>
-        <h2>Your Personality Type: {personalityType}</h2>
+        <h2>Job Suggestions</h2>
+        {loading ? (
+          <p>Loading job suggestions...</p>
+        ) : jobSuggestions.length > 0 ? (
+          jobSuggestions.map((job, index) => (
+            <div key={index} style={styles.jobContainer}>
+              <h4>{job.title}</h4>
+              <p>Company: {job.company.display_name}</p>
+              <p>Location: {job.location.display_name}</p>
+              <a href={job.redirect_url} target="_blank" rel="noopener noreferrer">
+                View Job
+              </a>
+            </div>
+          ))
+        ) : (
+          <p>No job suggestions found.</p>
+        )}
         <button style={styles.button} onClick={() => window.location.reload()}>
           Retake Quiz
         </button>
@@ -160,7 +178,7 @@ function Quiz() {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>16 Personalities Quiz</h2>
+      <h2 style={styles.title}>Quiz</h2>
       <div style={styles.progressBarContainer}>
         <div style={{ ...styles.progressBar, width: `${progress}%` }}></div>
       </div>
@@ -171,19 +189,12 @@ function Quiz() {
             <button
               key={index}
               style={styles.optionButton}
-              onClick={() => handleOptionClick(option.value, questions[currentQuestionIndex].category)}
+              onClick={() => handleOptionClick(option.value)}
             >
               {option.text}
             </button>
           ))}
         </div>
-      </div>
-      <div style={styles.buttonContainer}>
-        {currentQuestionIndex > 0 && (
-          <button style={styles.button} onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}>
-            Back
-          </button>
-        )}
       </div>
     </div>
   );
@@ -240,6 +251,13 @@ const styles = {
     transition: "background 0.3s",
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
   },
+  jobContainer: {
+    margin: "20px 0",
+    padding: "15px",
+    background: "#f9f9f9",
+    borderRadius: "8px",
+    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+  },
   button: {
     padding: "12px 24px",
     border: "none",
@@ -247,14 +265,8 @@ const styles = {
     background: "#4A90E2",
     color: "#fff",
     cursor: "pointer",
-    fontSize: "18px",
-    transition: "background 0.3s",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-  },
-  buttonContainer: {
-    display: "flex",
-    justifyContent: "space-between",
-    width: "100%",
+    fontSize: "16px",
+    marginTop: "20px",
   },
 };
 

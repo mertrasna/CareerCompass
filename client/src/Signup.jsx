@@ -30,7 +30,7 @@ function Signup() {
         }
 
         // Send registration data to backend
-        axios.post('http://localhost:3001/register', { firstName, lastName, username, email, password })
+        axios.post('http://localhost:3001/register', { firstName, lastName, username, email, password  })
     .then(result => {
         console.log("Registration result:", result);
         

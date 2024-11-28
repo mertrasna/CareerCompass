@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
 import axios from 'axios';
-import Cookies from 'js-cookie';  // Import js-cookie to access cookies
+import Cookies from 'js-cookie'; // Import js-cookie to access cookies
+import React, { useState } from "react";
 
 function Completion() {
   const [dob, setDob] = useState("");
-  const [role, setRole] = useState("job_seeker");
+  const [role, setRole] = useState("employer");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const [locationResults, setLocationResults] = useState([]);
   const [companyName, setCompanyName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [skills, setSkills] = useState([]);
-  const [errors, setErrors] = useState({ dob: "", location: "", companyName: "", contactNumber: "", skills: "" });
+  const [preferredJobType, setPreferredJobType] = useState(""); // New state for Preferred Job Type
+  const [errors, setErrors] = useState({ dob: "", location: "", companyName: "", contactNumber: "", skills: "", preferredJobType: "" });
 
   const geoapifyApiKey = "21e751dc4d7a4a12a21c8501d6c70d8f";
 
@@ -69,6 +70,7 @@ function Completion() {
     if (!dob) formErrors.dob = "Date of Birth is required";
     if (!selectedLocation) formErrors.location = "Location is required";
     if (role === "job_seeker" && !skills.length) formErrors.skills = "Please select at least one skill";
+    if (role === "job_seeker" && !preferredJobType) formErrors.preferredJobType = "Preferred Job Type is required"; // Validation for Preferred Job Type
 
     setErrors(formErrors);
     console.log("First step errors:", formErrors);
@@ -89,17 +91,21 @@ function Completion() {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!validateSecondStep()) return;
-
+    if (!validateFirstStep() || !validateSecondStep()) return; // Validate both steps
+  
     const profileData = {
       username,  // Add the username from cookies to the profile data
       dob,
       location: selectedLocation,
       role,
+      preferredJobType, // Send the preferred job type
       companyName: role === "employer" ? companyName : undefined,
       contactNumber: role === "employer" ? contactNumber : undefined,
       skills: role === "job_seeker" ? skills : undefined,
     };
+    
+    console.log("Selected role:", role);
+
   
     try {
       // Send the data to the backend to update the user's profile
@@ -115,7 +121,6 @@ function Completion() {
       console.error("Error completing profile:", error);
     }
   };
-  
 
   return (
     <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -174,22 +179,40 @@ function Completion() {
           </div>
 
           {role === "job_seeker" && (
-            <div className="mb-3">
-              <label><strong>Skills</strong></label>
-              <div className="d-flex flex-wrap">
-                {skillOptions.map((skill) => (
-                  <button
-                    key={skill}
-                    type="button"
-                    className={`btn btn-sm m-1 ${skills.includes(skill) ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => handleSkillSelect(skill)}
-                  >
-                    {skill}
-                  </button>
-                ))}
+            <>
+              <div className="mb-3">
+                <label><strong>Preferred Job Type</strong></label>
+                <select
+                  value={preferredJobType}
+                  onChange={(e) => setPreferredJobType(e.target.value)}
+                  className={`form-control ${errors.preferredJobType ? 'is-invalid' : ''}`}
+                >
+                  <option value="">Select Preferred Job Type</option>
+                  <option value="full-time">Full-time</option>
+                  <option value="part-time">Part-time</option>
+                  <option value="remote">Remote</option>
+                  <option value="mini-job">Mini-job</option>
+                </select>
+                {errors.preferredJobType && <div className="text-danger">{errors.preferredJobType}</div>}
               </div>
-              {errors.skills && <div className="text-danger">{errors.skills}</div>}
-            </div>
+
+              <div className="mb-3">
+                <label><strong>Skills</strong></label>
+                <div className="d-flex flex-wrap">
+                  {skillOptions.map((skill) => (
+                    <button
+                      key={skill}
+                      type="button"
+                      className={`btn btn-sm m-1 ${skills.includes(skill) ? 'btn-primary' : 'btn-outline-primary'}`}
+                      onClick={() => handleSkillSelect(skill)}
+                    >
+                      {skill}
+                    </button>
+                  ))}
+                </div>
+                {errors.skills && <div className="text-danger">{errors.skills}</div>}
+              </div>
+            </>
           )}
 
           {role === "employer" && (

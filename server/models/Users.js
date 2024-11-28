@@ -1,5 +1,3 @@
-//Users.js
-
 const mongoose = require('mongoose');
 
 const UsersSchema = new mongoose.Schema({
@@ -14,87 +12,144 @@ const UsersSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        unique: true // Ensure uniqueness of usernames
+        unique: true
     },
     email: {
         type: String,
         required: true,
-        unique: true // Ensure uniqueness of emails
+        unique: true
     },
     password: {
         type: String,
         required: true
     },
     pfp: {
-        type: String, // Profile picture URL
+        type: String, // Profile picture URL (can be updated or linked to a cloud storage service)
+        required: false // Optional field
     },
     role: {
         type: String,
-        enum: ['job_seeker', 'employer', 'admin'],
-        default: 'job_seeker' // Role of the user in the platform
+        enum: ['job_seeker', 'employer', 'admin']
+    },
+    preferredJobType: {
+        type: String,
+        enum: ['full-time', 'part-time', 'remote', 'mini-job'],
+        default: 'full-time'
+    },
+    personalityType: {
+        type: String, // Personality type, you can map it based on the quiz (e.g., INTJ, ENFP, etc.)
+        required: false // Optional field
     },
     verified: {
         type: Boolean,
-        default: false // Indicates if the user is verified
+        default: false
     },
     location: {
-        type: String, // General location of the user
+        type: String,
     },
     subscriptionType: {
         type: String,
         enum: ['basic', 'premium'],
-        default: 'basic' // Subscription level of the user
+        default: 'basic'
     },
-    education: {
-        type: String, // Education details of the user
-    },
+    education: [{
+        degree: {
+            type: String, // Degree or certification
+            required: true
+        },
+        institution: {
+            type: String, // Name of the educational institution
+            required: true
+        },
+        startDate: {
+            type: Date, // Start date of the education
+        },
+        endDate: {
+            type: Date, // End date of the education
+        },
+        description: {
+            type: String, // A brief description or details about the course
+        }
+    }],
     experience: [{
         company: String,
         role: String,
         startDate: Date,
         endDate: Date,
-        description: String // Array of job experience objects
+        description: String
     }],
-    skills: [String], // Array of skills for the user
-    preferredJobType: {
-        type: String,
-        enum: ['full-time', 'part-time', 'remote', 'mini-job'] // Preferred type of job
-    },
-    personalityType: {
-        type: String, // Result of the 16 Personalities Quiz
-    },
+    skills: [String],
     posts: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Post' // Reference to the Post model for user posts
+        ref: 'Post'
     }],
     reported: {
         type: Boolean,
-        default: false // Whether the user has been reported
+        default: false
     },
     createdAt: {
         type: Date,
-        default: Date.now // Date of account creation
+        default: Date.now
     },
     saved: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Post' // Reference to saved posts
+        ref: 'Post'
     }],
     notificationsEnabled: {
         type: Boolean,
-        default: true // User preference for notifications
+        default: true
     },
     languagePreference: {
         type: String,
-        default: 'en' // Preferred language for user interface
+        default: 'en'
     },
     lastLogin: {
         type: Date,
-        default: Date.now // Last login time
+        default: Date.now
     },
     authProvider: {
         type: String,
         enum: ['email', 'google'],
-        default: 'email' // Authentication provider used for login
+        default: 'email'
+    },
+    cardDetails: {
+        cardNumber: {
+            type: String,
+            required: false
+        },
+        expiryDate: {
+            type: String,
+            required: false
+        },
+        cardHolderName: {
+            type: String,
+            required: false
+        },
+        cardType: {
+            type: String,
+            enum: ['Visa', 'MasterCard', 'American Express', 'Discover'],
+            required: false
+        },
+        cvv: {
+            type: String,
+            required: false
+        }
+    },
+    wallet: {
+        balance: {
+            type: Number,
+            default: 70
+        },
+    },
+    companyName: {
+        type: String,
+        required: function() { return this.role === 'employer'; }, // Only required for employers
+        default: ''
+    },
+    contactNumber: {
+        type: String,
+        required: function() { return this.role === 'employer'; }, // Only required for employers
+        default: ''
     }
 });
 

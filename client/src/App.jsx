@@ -5,19 +5,29 @@ import Home from "./Home";
 import Login from "./Login";
 import Quiz from "./Quiz";
 import Signup from "./Signup";
-import Completion from "./Completion"
+import Completion from "./Completion";
+import Profile from "./Profile";
+import EditProfile from "./editProfile";
+import Payment from "./Payment";
+import Post from "./Post";
+import JobAds from "./JobAds"; // Import the JobAds component
 
 function App() {
   return (
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="/signup" element={<Signup />}></Route>
-          <Route path="/home" element={<Home />}></Route>
-          <Route path="/login" element={<Login />}></Route>
-          <Route path="/quiz" element={<Quiz />}></Route>
-          <Route path="/builder" element={<Builder />}></Route>
-          <Route path="/completion" element={<Completion />}></Route>
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/builder" element={<Builder />} />
+          <Route path="/completion" element={<Completion />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/editprofile" element={<EditProfile />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/post" element={<Post />} />
+          <Route path="/viewjob" element={<JobAds />} /> {/* New route for viewing job ads */}
         </Routes>
       </BrowserRouter>
     </div>
