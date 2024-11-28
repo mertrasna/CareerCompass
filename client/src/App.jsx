@@ -11,6 +11,9 @@ import EditProfile from "./editProfile";
 import Payment from "./Payment";
 import Post from "./Post";
 import JobAds from "./JobAds"; // Import the JobAds component
+import Admin from "./Admin";
+import Matchmaking from "./Matchmaking";
+import Matched from "./Matched";
 
 function App() {
   return (
@@ -28,6 +31,9 @@ function App() {
           <Route path="/payment" element={<Payment />} />
           <Route path="/post" element={<Post />} />
           <Route path="/viewjob" element={<JobAds />} /> {/* New route for viewing job ads */}
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/matchmaking" element={<Matchmaking />} />
+          <Route path="/matchedcandidates" element={<Matched />} />
         </Routes>
       </BrowserRouter>
     </div>

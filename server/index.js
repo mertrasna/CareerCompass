@@ -430,6 +430,152 @@ app.post("/employer-posts", async (req, res) => {
   }
 });
 
+// Fetch all users for the admin
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await UsersModel.find(); // Adjust to include necessary fields as per your schema
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
+});
+
+
+app.get('/api/users/:username', (req, res) => {
+  const { username } = req.params;
+  UsersModel.findOne({ username })
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.json(user);
+    })
+    .catch(err => res.status(500).json({ message: 'Server error', error: err }));
+});
+
+app.get("/all-jobs", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    const user = await UsersModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Extract job IDs the user has swiped on
+    const swipedJobIds = user.swipes.map((swipe) => swipe.jobId.toString());
+
+    // Fetch jobs that the user hasn't swiped on
+    const jobs = await PostModel.find({ _id: { $nin: swipedJobIds } });
+
+    if (jobs.length === 0) {
+      return res.status(200).json({ success: true, jobs: [] });
+    }
+
+    res.status(200).json({ success: true, jobs });
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+
+app.post("/swipe", async (req, res) => {
+  try {
+    const { username, jobId, status } = req.body;
+
+    if (!username || !jobId || !status) {
+      return res.status(400).json({ success: false, message: "Missing data" });
+    }
+
+    const user = await UsersModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const existingSwipe = user.swipes.find((swipe) => swipe.jobId.toString() === jobId);
+
+if (existingSwipe) {
+  existingSwipe.status = status;
+  await user.save();
+  return res
+    .status(200)
+    .json({ success: true, message: "Swipe status updated" });
+}
+
+// Save the new swipe
+user.swipes.push({ jobId, status });
+await user.save();
+
+res.status(200).json({ success: true, message: "Swipe recorded" });
+
+  } catch (error) {
+    console.error("Error saving swipe:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+app.get("/user-skills", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    const user = await UsersModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, skills: user.skills || [] });
+  } catch (error) {
+    console.error("Error fetching user skills:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+app.get("/matched-job-seekers", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    const employer = await UsersModel.findOne({ username, role: "employer" });
+    if (!employer) {
+      return res.status(404).json({ success: false, message: "Employer not found" });
+    }
+
+    const employerPosts = await PostModel.find({ postedBy: employer._id });
+    const postIds = employerPosts.map((post) => post._id.toString());
+
+    const matchedJobSeekers = await UsersModel.find({
+      role: "job_seeker",
+      swipes: {
+        $elemMatch: { jobId: { $in: postIds }, status: "yes" },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      matchedJobSeekers,
+    });
+  } catch (error) {
+    console.error("Error fetching matched job seekers:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
 
 
 

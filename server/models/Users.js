@@ -8,7 +8,7 @@ const UsersSchema = new mongoose.Schema({
     lastName: {
         type: String,
         required: true
-    }, 
+    },
     username: {
         type: String,
         required: true,
@@ -82,6 +82,21 @@ const UsersSchema = new mongoose.Schema({
     posts: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post'
+    }],
+    swipes: [{
+        jobId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post' // Reference to the job post
+        },
+        status: {
+            type: String,
+            enum: ['yes', 'no'], // Yes or No for swipe
+            required: true
+        },
+        swipedAt: {
+            type: Date,
+            default: Date.now // Timestamp of the swipe
+        }
     }],
     reported: {
         type: Boolean,

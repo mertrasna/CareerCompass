@@ -35,6 +35,11 @@ function Navbar({ userRole }) {
                 Payment
               </Link>
             </li>
+            <li>
+              <Link to="/matchmaking" style={styles.link}>
+                Matchmaking
+              </Link>
+            </li>
           </>
         )}
         {userRole === "employer" && (
@@ -45,7 +50,7 @@ function Navbar({ userRole }) {
               </Link>
             </li>
             <li>
-              <Link to="/matched-candidates" style={styles.link}>
+              <Link to="/matchedcandidates" style={styles.link}>
                 Matched Candidates
               </Link>
             </li>
