@@ -1,3 +1,4 @@
+import Cookies from "js-cookie";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -9,22 +10,17 @@ function Payment() {
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(Cookies.get("username") || ""); // Initialize from cookies
   const [cardType, setCardType] = useState(""); // Store card type
   const [paymentMethod, setPaymentMethod] = useState("card"); // Store payment method (card or wallet)
   const [walletBalance, setWalletBalance] = useState(100); // Simulate wallet balance (e.g., $100)
 
-  // Extract the username from the URL query parameter
+  // Verify if the username is available on component load
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const usernameParam = queryParams.get("username");
-
-    if (usernameParam) {
-      setUsername(usernameParam);
-    } else {
+    if (!username) {
       setPaymentStatus("User not logged in. Please log in to proceed.");
     }
-  }, [location.search]);
+  }, [username]);
 
   // Detect card type based on the card number
   const detectCardType = (number) => {

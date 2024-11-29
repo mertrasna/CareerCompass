@@ -10,10 +10,13 @@ import Profile from "./Profile";
 import EditProfile from "./editProfile";
 import Payment from "./Payment";
 import Post from "./Post";
-import JobAds from "./JobAds"; // Import the JobAds component
+import JobAds from "./JobAds"; 
 import Admin from "./Admin";
 import Matchmaking from "./Matchmaking";
 import Matched from "./Matched";
+import Settings from "./Settings";
+import Subscription from "./Subscription";
+import SearchAndExplore from "./SearchAndExplore";
 
 function App() {
   return (
@@ -30,10 +33,13 @@ function App() {
           <Route path="/editprofile" element={<EditProfile />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/post" element={<Post />} />
-          <Route path="/viewjob" element={<JobAds />} /> {/* New route for viewing job ads */}
+          <Route path="/viewjob" element={<JobAds />} /> 
           <Route path="/admin" element={<Admin />} />
           <Route path="/matchmaking" element={<Matchmaking />} />
           <Route path="/matchedcandidates" element={<Matched />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/subscription" element={<Subscription />} />
+          <Route path="/search" element={<SearchAndExplore />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -1,111 +1,245 @@
-import React, { useState, useEffect } from "react";
-import { jsPDF } from "jspdf";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { jsPDF } from "jspdf"; // Import jsPDF
 
 function Builder() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    education: "",
-    experience: "",
-    skills: "",
-    profession: "", // Add profession field
-  });
+  const [formData, setFormData] = useState(null); // Local state for user data
+  const [originalData, setOriginalData] = useState(null); // To reset changes if needed
+  const [error, setError] = useState(null); // To handle errors
+
+  // Retrieve the username from cookies
+  const username = Cookies.get("username");
+
+  useEffect(() => {
+    if (!username) {
+      setError("User not logged in. Please log in to access your profile.");
+      return;
+    }
+
+    // Fetch user data when the component mounts
+    axios
+      .post("http://localhost:3001/userdata", { username })
+      .then((res) => {
+        if (res.data.success) {
+          setFormData(res.data.user);
+          setOriginalData(res.data.user); // Keep a copy of the original data
+        } else {
+          setError(res.data.message || "Failed to fetch user data.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching user data:", err);
+        setError("An error occurred while fetching user data.");
+      });
+  }, [username]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [name]: value }); // Update local state only
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    generatePDF();
+  const handleReset = () => {
+    setFormData(originalData); // Reset the form to the original data
   };
 
-  // Function to call the generative API to get profession-based content
-  const generateContent = async (profession) => {
-    if (profession) {
-      try {
-        const response = await fetch("http://localhost:5000/api/generateContent", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ profession }),
-        });
-        const data = await response.json();
-        if (data.content) {
-          const [experience, skills] = data.content.split("\n");
-          setFormData((prevState) => ({
-            ...prevState,
-            experience: experience.replace("Experience:", "").trim(),
-            skills: skills.replace("Skills:", "").trim(),
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching generative content:", error);
-      }
-    }
+  const handlePreview = () => {
+    console.log("Preview Updated Data:", formData);
+    alert("Data has been updated locally. Check the console for details.");
   };
 
-  useEffect(() => {
-    if (formData.profession) {
-      generateContent(formData.profession); // Call the API when the profession changes
-    }
-  }, [formData.profession]);
-
-  const generatePDF = () => {
+  const handleDownloadPDF = () => {
     const doc = new jsPDF();
-    doc.text(`Name: ${formData.name}`, 10, 10);
-    doc.text(`Email: ${formData.email}`, 10, 20);
-    doc.text(`Phone: ${formData.phone}`, 10, 30);
-    doc.text(`Education: ${formData.education}`, 10, 40);
-    doc.text(`Experience: ${formData.experience}`, 10, 50);
-    doc.text(`Skills: ${formData.skills}`, 10, 60);
-    doc.save("cv.pdf");
+    doc.setFont("helvetica", "normal");
+  
+    const margin = 20;
+    let yOffset = margin;
+  
+    // Title Section
+    doc.setFontSize(20);
+    doc.text("Curriculum Vitae", margin, yOffset);
+    yOffset += 10;
+  
+    // Basic Info Section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Personal Information", margin, yOffset);
+    yOffset += 10;
+  
+    doc.setFont("helvetica", "normal");
+    doc.text(`First Name: ${formData.firstName}`, margin, yOffset);
+    yOffset += 7;
+    doc.text(`Last Name: ${formData.lastName}`, margin, yOffset);
+    yOffset += 7;
+    doc.text(`Username: ${formData.username}`, margin, yOffset);
+    yOffset += 7;
+    doc.text(`Email: ${formData.email}`, margin, yOffset);
+    yOffset += 10;
+  
+    // Role and Preferred Job Type Section
+    doc.setFont("helvetica", "bold");
+    doc.text("Role & Job Preferences", margin, yOffset);
+    yOffset += 10;
+  
+    doc.setFont("helvetica", "normal");
+    doc.text(`Role: ${formData.role}`, margin, yOffset);
+    yOffset += 7;
+    doc.text(`Preferred Job Type: ${formData.preferredJobType}`, margin, yOffset);
+    yOffset += 10;
+  
+    // Skills Section
+    doc.setFont("helvetica", "bold");
+    doc.text("Skills", margin, yOffset);
+    yOffset += 10;
+  
+    doc.setFont("helvetica", "normal");
+    doc.text(`Skills: ${formData.skills?.join(", ") || "N/A"}`, margin, yOffset);
+    yOffset += 10;
+  
+    // Education Section
+    if (formData.education?.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Education", margin, yOffset);
+      yOffset += 10;
+  
+      doc.setFont("helvetica", "normal");
+      formData.education.forEach((edu, index) => {
+        doc.text(`${edu.degree} - ${edu.institution}`, margin, yOffset);
+        yOffset += 7;
+        doc.text(`Start Date: ${edu.startDate ? edu.startDate.toLocaleDateString() : "N/A"}`, margin, yOffset);
+        yOffset += 7;
+        doc.text(`End Date: ${edu.endDate ? edu.endDate.toLocaleDateString() : "N/A"}`, margin, yOffset);
+        yOffset += 10;
+      });
+    }
+  
+    // Experience Section
+    if (formData.experience?.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Work Experience", margin, yOffset);
+      yOffset += 10;
+  
+      doc.setFont("helvetica", "normal");
+      formData.experience.forEach((exp, index) => {
+        doc.text(`${exp.role} - ${exp.company}`, margin, yOffset);
+        yOffset += 7;
+        doc.text(`Start Date: ${exp.startDate ? exp.startDate.toLocaleDateString() : "N/A"}`, margin, yOffset);
+        yOffset += 7;
+        doc.text(`End Date: ${exp.endDate ? exp.endDate.toLocaleDateString() : "N/A"}`, margin, yOffset);
+        yOffset += 10;
+      });
+    }
+  
+    // Footer Section
+    doc.setFont("helvetica", "italic");
+    doc.text("Generated by CareerCompass", margin, yOffset);
+  
+    // Convert the document to a Base64 string
+    const pdfBase64 = doc.output('datauristring');  // This generates a Base64 string
+  
+    // Save the PDF to the database
+    axios
+      .post("http://localhost:3001/saveCv", { username, pdfData: pdfBase64 })
+      .then((res) => {
+        if (res.data.success) {
+          alert("CV saved to the database successfully.");
+        } else {
+          alert("Failed to save CV to the database.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error saving CV:", err);
+        alert("An error occurred while saving your CV.");
+      });
+  
+    // Optionally, download the PDF
+    doc.save("user_profile_cv.pdf");
   };
+  
+
+  if (!username) return <p>Please log in to access this page.</p>;
+  if (error) return <p>{error}</p>; // Show error message if data fetching fails
+  if (!formData) return <p>Loading...</p>; // Show a loading message until data is fetched
 
   return (
-    <div style={{ width: "60%", margin: "auto", padding: "20px", fontFamily: "Arial, sans-serif", backgroundColor: "#f7f7f7", borderRadius: "10px" }}>
-      <h1 style={{ textAlign: "center" }}>CV Builder</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Email:</label>
-          <input type="email" name="email" value={formData.email} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Phone:</label>
-          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Education:</label>
-          <textarea name="education" value={formData.education} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Profession:</label>
-          <select name="profession" value={formData.profession} onChange={handleChange} required>
-            <option value="">Select Profession</option>
-            <option value="Software Engineer">Software Engineer</option>
-            <option value="Teacher">Teacher</option>
-            <option value="Graphic Designer">Graphic Designer</option>
-            <option value="Project Manager">Project Manager</option>
-          </select>
-        </div>
-        <div>
-          <label>Experience:</label>
-          <textarea name="experience" value={formData.experience} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Skills:</label>
-          <textarea name="skills" value={formData.skills} onChange={handleChange} required />
-        </div>
-        <button type="submit">Generate PDF</button>
-      </form>
-    </div>
+    <form>
+      <h2>Edit Profile (Local Updates Only)</h2>
+
+      <label>First Name:</label>
+      <input
+        type="text"
+        name="firstName"
+        value={formData.firstName || ""}
+        onChange={handleChange}
+      />
+
+      <label>Last Name:</label>
+      <input
+        type="text"
+        name="lastName"
+        value={formData.lastName || ""}
+        onChange={handleChange}
+      />
+
+      <label>Username:</label>
+      <input
+        type="text"
+        name="username"
+        value={formData.username || ""}
+        disabled
+      />
+
+      <label>Email:</label>
+      <input
+        type="email"
+        name="email"
+        value={formData.email || ""}
+        onChange={handleChange}
+      />
+
+      <label>Role:</label>
+      <select name="role" value={formData.role || ""} onChange={handleChange}>
+        <option value="job_seeker">Job Seeker</option>
+        <option value="employer">Employer</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <label>Preferred Job Type:</label>
+      <select
+        name="preferredJobType"
+        value={formData.preferredJobType || ""}
+        onChange={handleChange}
+      >
+        <option value="full-time">Full-Time</option>
+        <option value="part-time">Part-Time</option>
+        <option value="remote">Remote</option>
+        <option value="mini-job">Mini-Job</option>
+      </select>
+
+      <label>Skills:</label>
+      <input
+        type="text"
+        name="skills"
+        value={formData.skills?.join(", ") || ""}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            skills: e.target.value.split(",").map((skill) => skill.trim()),
+          })
+        }
+      />
+
+      <button type="button" onClick={handlePreview}>
+        Preview Changes Locally
+      </button>
+      <button type="button" onClick={handleReset}>
+        Reset Changes
+      </button>
+
+      <button type="button" onClick={handleDownloadPDF}>
+        Download as PDF
+      </button>
+    </form>
   );
 }
 

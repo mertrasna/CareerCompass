@@ -12,14 +12,52 @@ function Navbar({ userRole }) {
         </div>
       </div>
 
+      <ul style={styles.middle}>
+        <li>
+          <Link to="/search" style={styles.searchLink}>
+            <img
+              src="/logos/icons8-search-50.png"
+              alt="Search"
+              style={styles.searchImage}
+            />
+          </Link>
+        </li>
+        <li>
+          <Link to="/calendar" style={styles.searchLink}>
+          <img 
+            src="/logos/icons8-calendar-50.png"
+            alt="Home"
+            style={styles.searchImage}
+          />
+          </Link>
+        </li>
+        <li>
+          <Link to="/notifications" style={styles.searchLink}>
+          <img 
+            src="/logos/icons8-notifications-50.png"
+            alt="Home"
+            style={styles.searchImage}
+          />
+          </Link>
+        </li>
+      </ul>
+
+
+
+
       <ul style={styles.right}>
         <li>
-          <Link to="/" style={styles.link}>
+          <Link to="/settings" style={styles.link}>
             Settings
           </Link>
         </li>
         {userRole === "job_seeker" && (
           <>
+            <li>
+              <Link to="/subscription" style={styles.link}>
+                Subscription
+              </Link>
+            </li>
             <li>
               <Link to="/profile" style={styles.link}>
                 User Profile
@@ -89,11 +127,21 @@ const styles = {
     fontWeight: "bold",
     marginRight: "20px",
   },
+  middle: {
+    display: "flex",
+    listStyle: "none", 
+    margin: 0,
+    padding: 0,
+    alignItems: "center",
+  },
   right: {
     display: "flex",
     listStyle: "none",
     margin: 0,
     padding: 0,
+  },
+  searchLink: {
+    textDecoration: "none",
   },
   link: {
     color: "#fff",
@@ -101,6 +149,12 @@ const styles = {
     marginLeft: "15px",
     fontSize: "1rem",
   },
+  searchImage: {
+    width: "30px", 
+    height: "30px",
+    cursor: "pointer",
+    marginLeft: "25px",
+  }
 };
 
 export default Navbar;

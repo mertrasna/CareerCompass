@@ -564,11 +564,26 @@ app.get("/matched-job-seekers", async (req, res) => {
       swipes: {
         $elemMatch: { jobId: { $in: postIds }, status: "yes" },
       },
+    })
+      .select("username firstName lastName email skills preferredJobType swipes")
+      .lean();
+
+    // Attach postId to each matched job seeker
+    const matchedJobSeekersWithPostId = matchedJobSeekers.map((seeker) => {
+      const matchedSwipe = seeker.swipes.find((swipe) =>
+        postIds.includes(swipe.jobId.toString())
+      );
+      return {
+        ...seeker,
+        postId: matchedSwipe ? matchedSwipe.jobId : null,
+      };
     });
+
+    console.log("Matched Job Seekers With Post ID:", matchedJobSeekersWithPostId); // Debugging
 
     res.status(200).json({
       success: true,
-      matchedJobSeekers,
+      matchedJobSeekers: matchedJobSeekersWithPostId,
     });
   } catch (error) {
     console.error("Error fetching matched job seekers:", error);
@@ -577,8 +592,130 @@ app.get("/matched-job-seekers", async (req, res) => {
 });
 
 
+app.post("/process-decision", async (req, res) => {
+  try {
+    const { employerUsername, seekerUsername, postId, decision } = req.body;
+
+    // Validate required fields
+    if (!employerUsername || !seekerUsername || !postId || !decision) {
+      console.error("Missing required fields:", { employerUsername, seekerUsername, postId, decision });
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    // Fetch employer to validate their existence
+    const employer = await UsersModel.findOne({ username: employerUsername, role: "employer" });
+    if (!employer) {
+      console.error("Employer not found for username:", employerUsername);
+      return res.status(404).json({ success: false, message: "Employer not found" });
+    }
+
+    // Fetch seeker to update their swipe status
+    const seeker = await UsersModel.findOne({ username: seekerUsername, role: "job_seeker" });
+    if (!seeker) {
+      console.error("Seeker not found for username:", seekerUsername);
+      return res.status(404).json({ success: false, message: "Job seeker not found" });
+    }
+
+    // Update the specific swipe status in the seeker's document
+    const swipe = seeker.swipes.find((swipe) => swipe.jobId.toString() === postId);
+    if (!swipe) {
+      console.error("Swipe not found for the given postId in seeker's record");
+      return res.status(404).json({ success: false, message: "Swipe record not found" });
+    }
+
+    // Update employerStatus based on decision
+    swipe.employerStatus = decision === "yes" ? "Accepted" : "Rejected";
+
+    // Save the updated seeker document
+    await seeker.save();
+
+    // Respond to the client
+    res.status(200).json({
+      success: true,
+      message: decision === "yes" ? "Candidate accepted" : "Candidate rejected",
+    });
+  } catch (error) {
+    console.error("Error processing decision:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+app.post("/saveCv", (req, res) => {
+  const { username, pdfData } = req.body;
+
+  UsersModel.findOneAndUpdate(
+    { username },
+    { $set: { pdfData } }, // Update or add the PDF data
+    { new: true }
+  )
+    .then((user) => {
+      if (user) {
+        res.json({ success: true, message: "CV saved successfully." });
+      } else {
+        res.json({ success: false, message: "User not found." });
+      }
+    })
+    .catch((err) => {
+      console.error("Error saving CV:", err);
+      res.json({ success: false, message: "An error occurred." });
+    });
+});
 
 
+app.post('/uploadDocument', upload.single('document'), async (req, res) => {
+  if (!req.file || !req.file.path) {
+    return res.status(400).json({ success: false, message: "No document uploaded." });
+  }
+
+  const { username } = req.body;
+  const documentUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
+  try {
+    // Assuming you have a UsersModel where you store the documents for each user
+    const user = await UsersModel.findOneAndUpdate(
+      { username },
+      { $set: { documents: documentUrl } }, // Set the document URL as a single string, not an array
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Respond with the updated document URL (if needed)
+    res.json({
+      success: true,
+      message: "Document uploaded successfully",
+      documentUrl,
+    });
+  } catch (error) {
+    console.error("Error uploading document:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+// Route to verify user
+app.post("/api/users/verify", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    // Find the user and update their verified status
+    const updatedUser = await UsersModel.findOneAndUpdate(
+      { username },
+      { verified: true },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error("Error verifying user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // Serve static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

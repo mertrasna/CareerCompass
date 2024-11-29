@@ -29,9 +29,12 @@ function Matchmaking() {
         ]);
 
         if (jobsResponse.data.success && userResponse.data.success) {
-          const allJobs = jobsResponse.data.jobs;
-          const userSkills = userResponse.data.skills;
-          const alreadySwiped = jobsResponse.data.alreadySwiped;
+          const allJobs = jobsResponse.data.jobs || [];
+          const userSkills = userResponse.data.skills || [];
+          const alreadySwiped = jobsResponse.data.alreadySwiped || [];
+
+          console.log("All jobs:", allJobs);
+          console.log("User skills:", userSkills);
 
           // Filter out jobs that have already been swiped
           const filteredJobs = allJobs.filter(
@@ -40,8 +43,12 @@ function Matchmaking() {
 
           // Prioritize jobs with matching skills
           const sortedJobs = filteredJobs.sort((a, b) => {
-            const aMatches = a.skills.filter((skill) => userSkills.includes(skill)).length;
-            const bMatches = b.skills.filter((skill) => userSkills.includes(skill)).length;
+            const aMatches = (a.skills || []).filter((skill) =>
+              (userSkills || []).includes(skill)
+            ).length;
+            const bMatches = (b.skills || []).filter((skill) =>
+              (userSkills || []).includes(skill)
+            ).length;
             return bMatches - aMatches; // Higher matches come first
           });
 

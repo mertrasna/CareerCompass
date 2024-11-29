@@ -90,8 +90,13 @@ const UsersSchema = new mongoose.Schema({
         },
         status: {
             type: String,
-            enum: ['yes', 'no'], // Yes or No for swipe
+            enum: ['yes', 'no'], // Job seeker’s swipe decision
             required: true
+        },
+        employerStatus: {
+            type: String,
+            enum: ['Pending', 'Reviewed', 'Rejected', 'Accepted'], // Employer's decision
+            default: 'Pending'
         },
         swipedAt: {
             type: Date,
@@ -165,6 +170,14 @@ const UsersSchema = new mongoose.Schema({
         type: String,
         required: function() { return this.role === 'employer'; }, // Only required for employers
         default: ''
+    },
+    pdfData: { 
+        type: String, 
+        default: null // Base64 string for PDF data
+      },
+    documents: {
+        type: String, // Profile picture URL (can be updated or linked to a cloud storage service)
+        required: false // Optional field
     }
 });
 

@@ -83,4 +83,4 @@ const seedJobPosts = async (numPosts) => {
 };
 
 // Call the function to seed a specified number of job posts
-seedJobPosts(20); // Adjust the number of job posts to generate
+seedJobPosts(5); // Adjust the number of job posts to generate
