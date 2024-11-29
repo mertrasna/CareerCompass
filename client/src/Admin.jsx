@@ -70,6 +70,31 @@ const Admin = () => {
     }
   };
 
+  const handleRejectUser = async (username) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3001/api/users/reject",
+        {
+          username, // Send username in the request body
+        }
+      );
+      if (response.data.success) {
+        alert("User rejected successfully!");
+        // Update the local state to reflect the change
+        setSelectedUser({ ...selectedUser, verified: false });
+        // Optionally update the users list if needed
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.username === username ? { ...user, verified: false } : user
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error rejecting user:", error);
+      alert("Failed to reject user.");
+    }
+  };
+
   const handleBackToList = () => {
     setSelectedUser(null);
   };
@@ -356,6 +381,9 @@ const Admin = () => {
                                 padding: "5px 10px",
                                 cursor: "pointer",
                               }}
+                              onClick={() =>
+                                handleRejectUser(selectedUser.username)
+                              }
                             >
                               Reject
                             </button>

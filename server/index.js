@@ -562,7 +562,7 @@ app.get("/matched-job-seekers", async (req, res) => {
     const matchedJobSeekers = await UsersModel.find({
       role: "job_seeker",
       swipes: {
-        $elemMatch: { jobId: { $in: postIds }, status: "yes" },
+        $elemMatch: { jobId: { $in: postIds }, status: "yes", employerStatus: { $ne: "Rejected" } },
       },
     })
       .select("username firstName lastName email skills preferredJobType swipes")
@@ -570,8 +570,8 @@ app.get("/matched-job-seekers", async (req, res) => {
 
     // Attach postId to each matched job seeker
     const matchedJobSeekersWithPostId = matchedJobSeekers.map((seeker) => {
-      const matchedSwipe = seeker.swipes.find((swipe) =>
-        postIds.includes(swipe.jobId.toString())
+      const matchedSwipe = seeker.swipes.find(
+        (swipe) => postIds.includes(swipe.jobId.toString()) && swipe.employerStatus !== "Rejected"
       );
       return {
         ...seeker,
@@ -579,7 +579,7 @@ app.get("/matched-job-seekers", async (req, res) => {
       };
     });
 
-    console.log("Matched Job Seekers With Post ID:", matchedJobSeekersWithPostId); // Debugging
+    console.log("Matched Job Seekers With Post ID:", matchedJobSeekersWithPostId);
 
     res.status(200).json({
       success: true,
@@ -590,7 +590,6 @@ app.get("/matched-job-seekers", async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
-
 
 app.post("/process-decision", async (req, res) => {
   try {
@@ -713,6 +712,29 @@ app.post("/api/users/verify", async (req, res) => {
     res.json({ success: true, user: updatedUser });
   } catch (error) {
     console.error("Error verifying user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Route to verify user
+app.post("/api/users/reject", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    // Find the user and update their verified status
+    const updatedUser = await UsersModel.findOneAndUpdate(
+      { username },
+      { verified: false },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error("Error rejecting user:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

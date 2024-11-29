@@ -54,30 +54,34 @@ function Matched() {
   const handleDecision = async (seekerUsername, postId, decision) => {
     try {
       const employerUsername = getCookie("username");
-
+  
       console.log("Employer Username:", employerUsername);
       console.log("Seeker Username:", seekerUsername);
       console.log("Post ID:", postId);
       console.log("Decision:", decision);
-
+  
       if (!employerUsername || !seekerUsername || !postId || !decision) {
         console.error("Missing required fields!");
         alert("Missing required fields. Please check the data.");
         return;
       }
-
+  
       const response = await axios.post("http://localhost:3001/process-decision", {
         employerUsername,
         seekerUsername,
         postId,
         decision,
       });
-
+  
       if (response.data.success) {
         alert(response.data.message);
-        setMatchedJobSeekers((prevSeekers) =>
-          prevSeekers.filter((seeker) => seeker.username !== seekerUsername)
-        );
+  
+        // Remove rejected candidates from the list
+        if (decision === "no") {
+          setMatchedJobSeekers((prevSeekers) =>
+            prevSeekers.filter((seeker) => seeker.username !== seekerUsername)
+          );
+        }
       } else {
         alert("Failed to process decision: " + response.data.message);
       }
@@ -86,6 +90,7 @@ function Matched() {
       alert("An error occurred while processing the decision. Please try again.");
     }
   };
+  
 
   return (
     <div className="container mt-5">
