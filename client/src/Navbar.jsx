@@ -1,9 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FiSearch, FiCalendar, FiBell } from "react-icons/fi"; // Import icons from react-icons
 
 function Navbar({ userRole }) {
   return (
     <nav style={styles.navbar}>
+      {/* Left Section */}
       <div style={styles.left}>
         <div style={styles.logo}>
           <Link to="/home" style={styles.link}>
@@ -12,39 +14,29 @@ function Navbar({ userRole }) {
         </div>
       </div>
 
+      {/* Middle Section */}
       <ul style={styles.middle}>
-        <li>
-          <Link to="/search" style={styles.searchLink}>
-            <img
-              src="/logos/icons8-search-50.png"
-              alt="Search"
-              style={styles.searchImage}
-            />
-          </Link>
-        </li>
+        {/* Conditionally render the search icon for job_seekers only */}
+        {userRole === "job_seeker" && (
+          <li>
+            <Link to="/search" style={styles.searchLink}>
+              <FiSearch style={styles.icon} />
+            </Link>
+          </li>
+        )}
         <li>
           <Link to="/calendar" style={styles.searchLink}>
-          <img 
-            src="/logos/icons8-calendar-50.png"
-            alt="Home"
-            style={styles.searchImage}
-          />
+            <FiCalendar style={styles.icon} />
           </Link>
         </li>
         <li>
           <Link to="/notifications" style={styles.searchLink}>
-          <img 
-            src="/logos/icons8-notifications-50.png"
-            alt="Home"
-            style={styles.searchImage}
-          />
+            <FiBell style={styles.icon} />
           </Link>
         </li>
       </ul>
 
-
-
-
+      {/* Right Section */}
       <ul style={styles.right}>
         <li>
           <Link to="/settings" style={styles.link}>
@@ -129,7 +121,7 @@ const styles = {
   },
   middle: {
     display: "flex",
-    listStyle: "none", 
+    listStyle: "none",
     margin: 0,
     padding: 0,
     alignItems: "center",
@@ -142,6 +134,8 @@ const styles = {
   },
   searchLink: {
     textDecoration: "none",
+    color: "inherit",
+    margin: "0 15px",
   },
   link: {
     color: "#fff",
@@ -149,12 +143,11 @@ const styles = {
     marginLeft: "15px",
     fontSize: "1rem",
   },
-  searchImage: {
-    width: "30px", 
-    height: "30px",
+  icon: {
+    fontSize: "1.5rem", // Adjust icon size
+    color: "#fff", // Icon color
     cursor: "pointer",
-    marginLeft: "25px",
-  }
+  },
 };
 
 export default Navbar;

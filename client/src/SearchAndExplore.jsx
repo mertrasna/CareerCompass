@@ -1,35 +1,40 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 function SearchAndExplore() {
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const username = "current_user_username"; // Replace this with the logged-in user's username
+  const username = Cookies.get("username");
 
   useEffect(() => {
-    // Fetch all jobs for the user
-    const fetchJobs = async () => {
+    if (!username) {
+      console.log("User not logged in. Please log in to proceed.");
+      return;
+    }
+
+    // Fetch swiped "yes" jobs for the user
+    const fetchSwipedJobs = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/all-jobs", {
-          params: { username }, // Pass the username as a query parameter
+        const response = await axios.get("http://localhost:3001/swiped-jobs", {
+          params: { username },
         });
 
         if (response.data.success) {
           setJobs(response.data.jobs);
           setFilteredJobs(response.data.jobs); // Initially show all jobs
         } else {
-          console.error("Error fetching jobs:", response.data.message);
+          console.error("Error fetching swiped jobs:", response.data.message);
         }
       } catch (error) {
-        console.error("Error fetching jobs:", error);
+        console.error("Error fetching swiped jobs:", error);
       }
     };
 
-    fetchJobs();
+    fetchSwipedJobs();
   }, [username]);
 
-  // Handle search bar input
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -45,7 +50,7 @@ function SearchAndExplore() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Search and Explore Jobs</h1>
+      <h1 style={styles.title}>Your Saved Jobs</h1>
 
       {/* Search Bar */}
       <div style={styles.searchBar}>
@@ -70,10 +75,13 @@ function SearchAndExplore() {
               <p style={styles.jobSalary}>
                 Salary: ${job.salaryRange.min} - ${job.salaryRange.max}
               </p>
+              <p style={styles.jobStatus}>
+                <strong>Application Status:</strong> {job.status || "Pending"}
+              </p>
             </div>
           ))
         ) : (
-          <p style={styles.noJobs}>No jobs found</p>
+          <p style={styles.noJobs}>No saved jobs found</p>
         )}
       </div>
     </div>
@@ -135,6 +143,10 @@ const styles = {
   jobSalary: {
     fontWeight: "bold",
     color: "#333",
+  },
+  jobStatus: {
+    fontSize: "1rem",
+    color: "#007bff",
   },
   noJobs: {
     color: "#999",

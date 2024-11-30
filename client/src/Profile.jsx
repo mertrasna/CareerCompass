@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 function Profile() {
-  const navigate = useNavigate(); // Initialize the navigation hook
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newProfilePic, setNewProfilePic] = useState(null);
+  const [newDocument, setNewDocument] = useState(null);
   const [profilePic, setProfilePic] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -60,9 +61,39 @@ function Profile() {
     }
   };
 
+  const uploadDocument = async () => {
+    if (!newDocument) {
+      setError('No document selected for upload');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('document', newDocument);
+    formData.append('username', Cookies.get('username'));
+
+    try {
+      const response = await axios.post('http://localhost:3001/uploadDocument', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Document uploaded successfully:', response.data);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Error uploading document:', err);
+      setError('Failed to upload document');
+    }
+  };
+
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
       setNewProfilePic(e.target.files[0]);
+    }
+  };
+
+  const handleDocumentChange = (e) => {
+    if (e.target.files[0]) {
+      setNewDocument(e.target.files[0]);
     }
   };
 
@@ -73,6 +104,7 @@ function Profile() {
   const closeModal = () => {
     setIsModalOpen(false);
     setNewProfilePic(null);
+    setNewDocument(null);
   };
 
   const calculateProfileCompletion = () => {
@@ -134,22 +166,21 @@ function Profile() {
           <div style={{ ...styles.completionProgress, width: `${profileCompletion}%` }}></div>
         </div>
         <p>{profileCompletion}% Complete</p>
-      </div>
-
-      <div style={styles.careerMatch}>
-        <h2>Recommended Jobs</h2>
-        <ul>
-          {user.recommendedJobs && user.recommendedJobs.length > 0 ? (
-            user.recommendedJobs.map((job, index) => (
-              <li key={index}>
-                <strong>{job.title}</strong> - {job.company} <br />
-                <em>{job.location}</em>
-              </li>
-            ))
-          ) : (
-            <p>No recommended jobs available.</p>
-          )}
-        </ul>
+        {profileCompletion === 100 && (
+          <div style={styles.verificationSection}>
+            <h2>Verify Yourself</h2>
+            <p>Upload a document to verify your identity</p>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.txt,.jpg,.png"
+              onChange={handleDocumentChange}
+              style={styles.fileInput}
+            />
+            <button onClick={uploadDocument} style={styles.confirmButton}>
+              Upload Document
+            </button>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
@@ -165,7 +196,7 @@ function Profile() {
             <div style={styles.modalButtons}>
               <button onClick={closeModal} style={styles.cancelButton}>Cancel</button>
               <button onClick={updateProfilePicture} style={styles.confirmButton}>
-                Confirm Upload
+                Confirm Picture Upload
               </button>
             </div>
           </div>
@@ -258,9 +289,6 @@ const styles = {
     background: '#4caf50',
     borderRadius: '25px',
     height: '100%',
-  },
-  careerMatch: {
-    marginTop: '20px',
   },
   loading: {
     textAlign: 'center',

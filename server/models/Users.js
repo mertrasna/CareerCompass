@@ -178,8 +178,15 @@ const UsersSchema = new mongoose.Schema({
     documents: {
         type: String, // Profile picture URL (can be updated or linked to a cloud storage service)
         required: false // Optional field
-    }
-});
+    },
+    interviews: [
+        {
+          employerUsername: { type: String, required: true },
+          postId: { type: mongoose.Schema.Types.ObjectId, required: true },
+          interviewDate: { type: Date, required: true },
+        },
+      ],
+    });
 
 const UsersModel = mongoose.model('Users', UsersSchema);
 

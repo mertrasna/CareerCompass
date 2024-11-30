@@ -565,7 +565,7 @@ app.get("/matched-job-seekers", async (req, res) => {
         $elemMatch: { jobId: { $in: postIds }, status: "yes", employerStatus: { $ne: "Rejected" } },
       },
     })
-      .select("username firstName lastName email skills preferredJobType swipes")
+      .select("username firstName lastName email skills preferredJobType swipes pdfData") // Include pdfData here
       .lean();
 
     // Attach postId to each matched job seeker
@@ -590,6 +590,7 @@ app.get("/matched-job-seekers", async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
+
 
 app.post("/process-decision", async (req, res) => {
   try {
@@ -737,6 +738,269 @@ app.post("/api/users/reject", async (req, res) => {
     console.error("Error rejecting user:", error);
     res.status(500).json({ message: "Server error" });
   }
+});
+
+app.get("/swiped-jobs", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    // Find the user by username
+    const user = await UsersModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Extract job IDs and statuses where the user swiped "yes"
+    const swipedJobs = user.swipes
+      .filter((swipe) => swipe.status === "yes")
+      .map((swipe) => ({
+        jobId: swipe.jobId,
+        status: swipe.employerStatus,
+      }));
+
+    // Fetch the jobs that the user swiped "yes" on
+    const jobs = await PostModel.find({
+      _id: { $in: swipedJobs.map((swipe) => swipe.jobId) },
+    });
+
+    // Combine job details with swipe statuses
+    const jobsWithStatus = jobs.map((job) => {
+      const swipe = swipedJobs.find((swipe) => swipe.jobId.toString() === job._id.toString());
+      return {
+        ...job.toObject(),
+        status: swipe ? swipe.status : "Pending",
+      };
+    });
+
+    res.status(200).json({ success: true, jobs: jobsWithStatus });
+  } catch (error) {
+    console.error("Error fetching swiped jobs:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+app.get("/user-location", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    const user = await UsersModel.findOne({ username });
+
+    if (!user || !user.location) {
+      return res.status(404).json({ success: false, message: "User location not found" });
+    }
+
+    res.status(200).json({ success: true, location: user.location });
+  } catch (error) {
+    console.error("Error fetching user location:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+
+// Route to handle translations
+app.post('/translate', async (req, res) => {
+  const { texts, targetLanguage } = req.body;
+
+  const apiKey = '4Iy5N6M88saTRMTKysR1wE1ya4lGvvo4a2WEPscM7f9Fr30Zas5vJQQJ99AKAC5RqLJXJ3w3AAAbACOG72Sn'; // Replace with your Azure Translator API key
+  const endpoint = 'https://api.cognitive.microsofttranslator.com/translate';
+  const region = 'westeurope'; // Replace with your Azure region (e.g., "eastus")
+
+  try {
+    const response = await axios.post(
+      `${endpoint}?api-version=3.0&to=${targetLanguage}`,
+      texts.map(text => ({ text })),
+      {
+        headers: {
+          'Ocp-Apim-Subscription-Key': apiKey,
+          'Ocp-Apim-Subscription-Region': region,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const translations = response.data.map(item => item.translations[0].text);
+    return res.json({ translations });
+  } catch (error) {
+    console.error('Error during translation:', error);
+    return res.status(500).json({ error: 'Failed to translate content' });
+  }
+});
+
+app.delete("/delete-account", async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    const deletedUser = await UsersModel.findOneAndDelete({ username });
+
+    if (!deletedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+app.post("/update-subscription", async (req, res) => {
+  const { username, subscriptionType } = req.body;
+
+  if (!username || !subscriptionType) {
+    return res.status(400).json({ success: false, message: "Invalid request data." });
+  }
+
+  try {
+    const user = await UsersModel.findOneAndUpdate(
+      { username },
+      { subscriptionType }, // Set subscription to the provided type
+      { new: true } // Return the updated user
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Subscription updated to ${subscriptionType}.`,
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+app.get("/subscription", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required." });
+  }
+
+  try {
+    const user = await UsersModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    res.status(200).json({ success: true, subscriptionType: user.subscriptionType });
+  } catch (error) {
+    console.error("Error fetching subscription:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+app.post("/schedule-interview", async (req, res) => {
+  const { employerUsername, seekerUsername, postId, interviewDate } = req.body;
+
+  // Validate required fields
+  if (!employerUsername || !seekerUsername || !postId || !interviewDate) {
+    return res.status(400).json({ success: false, message: "Missing required fields." });
+  }
+
+  try {
+    const user = await UsersModel.findOne({ username: seekerUsername });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Job seeker not found." });
+    }
+
+    user.interviews = user.interviews || [];
+    user.interviews.push({
+      employerUsername,
+      postId,
+      interviewDate,
+    });
+
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Interview scheduled successfully." });
+  } catch (error) {
+    console.error("Error scheduling interview:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+
+
+app.post("/cancel-subscription", async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required." });
+  }
+
+  try {
+    const user = await UsersModel.findOneAndUpdate(
+      { username },
+      { subscriptionType: "basic" }, // Change subscription to "basic"
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    res.status(200).json({ success: true, message: "Subscription cancelled successfully." });
+  } catch (error) {
+    console.error("Error cancelling subscription:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+app.get("/interview-notifications", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    const user = await UsersModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const interviews = user.interviews || [];
+
+    res.status(200).json({ success: true, interviews });
+  } catch (error) {
+    console.error("Error fetching interview notifications:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+app.post("/log-notification", (req, res) => {
+  const { notification } = req.body;
+  console.log("Server-side log:", notification);
+  res.status(200).json({ success: true });
+});
+app.get("/interview-schedule", async (req, res) => {
+  const { username } = req.query;
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username required." });
+  }
+  const user = await UsersModel.findOne({ username });
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found." });
+  }
+  res.status(200).json({ success: true, interviews: user.interviews || [] });
 });
 
 // Serve static files (uploaded images)

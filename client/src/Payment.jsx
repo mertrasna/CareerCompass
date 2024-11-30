@@ -1,11 +1,9 @@
 import Cookies from "js-cookie";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 
 function Payment() {
-  const location = useLocation();
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
@@ -14,15 +12,33 @@ function Payment() {
   const [cardType, setCardType] = useState(""); // Store card type
   const [paymentMethod, setPaymentMethod] = useState("card"); // Store payment method (card or wallet)
   const [walletBalance, setWalletBalance] = useState(100); // Simulate wallet balance (e.g., $100)
+  const [isPremium, setIsPremium] = useState(false); // Check if user already has premium
 
-  // Verify if the username is available on component load
+  // Check if the user is already on a premium plan
   useEffect(() => {
-    if (!username) {
+    const fetchSubscriptionStatus = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/subscription", {
+          params: { username },
+        });
+
+        if (response.data.success) {
+          setIsPremium(response.data.subscriptionType === "premium");
+        } else {
+          console.error("Failed to fetch subscription type:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription type:", error);
+      }
+    };
+
+    if (username) {
+      fetchSubscriptionStatus();
+    } else {
       setPaymentStatus("User not logged in. Please log in to proceed.");
     }
   }, [username]);
 
-  // Detect card type based on the card number
   const detectCardType = (number) => {
     const visaRegex = /^4/;
     const mastercardRegex = /^5[1-5]/;
@@ -40,7 +56,27 @@ function Payment() {
     setCardType(detectCardType(value));
   };
 
-  // Handle form submission for both card and wallet payments
+  const updateSubscription = async () => {
+    try {
+      const response = await axios.post("http://localhost:3001/update-subscription", {
+        username,
+        subscriptionType: "premium",
+      });
+
+      if (response.data.success) {
+        setPaymentStatus("Your subscription has been upgraded to premium!");
+        console.log("Subscription updated to premium.");
+        setIsPremium(true); // Update premium status
+      } else {
+        setPaymentStatus("Payment successful, but subscription update failed.");
+        console.error("Failed to update subscription:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating subscription:", error);
+      setPaymentStatus("An error occurred while updating your subscription.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -49,37 +85,25 @@ function Payment() {
       return;
     }
 
-    if (paymentMethod === "card") {
-      // Card payment logic
-      try {
-        const response = await axios.post("http://localhost:3001/payment", {
-          username,
-          cardNumber,
-          expiryDate,
-          cvv,
-        });
+    if (isPremium) {
+      setPaymentStatus("You already have a premium subscription.");
+      return;
+    }
 
-        if (response.data.success) {
-          setPaymentStatus("Payment successful!");
-        } else {
-          setPaymentStatus("Payment failed. Please try again.");
-        }
-      } catch (error) {
-        setPaymentStatus("An error occurred during the payment process.");
-        console.error(error);
-      }
-    } else if (paymentMethod === "wallet") {
-      // Wallet payment logic
-      if (walletBalance >= 50) { // Example: Check if wallet has enough funds
+    if (paymentMethod === "wallet") {
+      if (walletBalance >= 50) {
         try {
           const response = await axios.post("http://localhost:3001/wallet-payment", {
             username,
-            amount: 50, // Example: Payment amount
+            amount: 50,
           });
 
           if (response.data.success) {
-            setWalletBalance(walletBalance - 50); // Deduct the payment from wallet balance
+            setWalletBalance(walletBalance - 50); // Deduct from wallet balance
             setPaymentStatus("Payment successful using wallet!");
+
+            // Update subscription to premium after successful wallet payment
+            await updateSubscription();
           } else {
             setPaymentStatus("Payment failed. Please try again.");
           }
@@ -90,13 +114,37 @@ function Payment() {
       } else {
         setPaymentStatus("Insufficient wallet balance.");
       }
+    } else if (paymentMethod === "card") {
+      try {
+        const response = await axios.post("http://localhost:3001/payment", {
+          username,
+          cardNumber,
+          expiryDate,
+          cvv,
+        });
+
+        if (response.data.success) {
+          setPaymentStatus("Payment successful!");
+          await updateSubscription(); // Update subscription after card payment
+        } else {
+          setPaymentStatus("Payment failed. Please try again.");
+        }
+      } catch (error) {
+        setPaymentStatus("An error occurred during the payment process.");
+        console.error(error);
+      }
     }
   };
 
   return (
     <PaymentContainer>
       <h1>Payment Simulation</h1>
-      <form onSubmit={handleSubmit} className="payment-form">
+      {isPremium && (
+        <PremiumMessage>
+          You are already a premium subscriber! Thank you for your support.
+        </PremiumMessage>
+      )}
+      <form onSubmit={handleSubmit}>
         <InputGroup>
           <label>Payment Method</label>
           <PaymentOption>
@@ -124,42 +172,34 @@ function Payment() {
         {paymentMethod === "card" && (
           <>
             <InputGroup>
-              <label htmlFor="cardNumber">Card Number</label>
+              <label>Card Number</label>
               <input
                 type="text"
-                id="cardNumber"
                 value={cardNumber}
                 onChange={handleCardNumberChange}
                 placeholder="1234 5678 9012 3456"
                 maxLength="20"
-                className="input-field"
               />
               {cardType && <CardType>{cardType}</CardType>}
             </InputGroup>
-
             <InputGroup>
-              <label htmlFor="expiryDate">Expiry Date</label>
+              <label>Expiry Date</label>
               <input
                 type="text"
-                id="expiryDate"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
                 placeholder="MM/YY"
                 maxLength="5"
-                className="input-field"
               />
             </InputGroup>
-
             <InputGroup>
-              <label htmlFor="cvv">CVV</label>
+              <label>CVV</label>
               <input
                 type="password"
-                id="cvv"
                 value={cvv}
                 onChange={(e) => setCvv(e.target.value)}
                 placeholder="123"
                 maxLength="3"
-                className="input-field"
               />
             </InputGroup>
           </>
@@ -172,7 +212,9 @@ function Payment() {
           </InputGroup>
         )}
 
-        <SubmitButton type="submit">Pay Now</SubmitButton>
+        <SubmitButton type="submit" disabled={isPremium}>
+          {isPremium ? "Already Subscribed" : "Pay Now"}
+        </SubmitButton>
       </form>
 
       {paymentStatus && <PaymentStatus>{paymentStatus}</PaymentStatus>}
@@ -191,14 +233,11 @@ const PaymentContainer = styled.div`
 `;
 
 const InputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
   margin-bottom: 15px;
 `;
 
 const CardType = styled.div`
   margin-top: 10px;
-  font-size: 16px;
   color: #333;
   font-weight: bold;
 `;
@@ -206,30 +245,34 @@ const CardType = styled.div`
 const PaymentOption = styled.div`
   display: flex;
   justify-content: space-between;
+`;
+
+const PremiumMessage = styled.p`
+  color: green;
+  font-weight: bold;
   margin-bottom: 20px;
 `;
 
 const SubmitButton = styled.button`
-  padding: 12px;
+  padding: 10px;
   background-color: #28a745;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 5px;
-  font-size: 18px;
   cursor: pointer;
-  transition: background-color 0.3s;
-
   &:hover {
     background-color: #218838;
+  }
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
 `;
 
 const PaymentStatus = styled.p`
-  text-align: center;
-  font-size: 18px;
+  margin-top: 15px;
   font-weight: bold;
   color: #333;
-  margin-top: 20px;
 `;
 
 export default Payment;

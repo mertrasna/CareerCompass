@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 function Matched() {
   const [matchedJobSeekers, setMatchedJobSeekers] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [interviewDetails, setInterviewDetails] = useState(null); // Track interview details
   const navigate = useNavigate();
 
   // Helper function to get a specific cookie by name
@@ -25,14 +29,12 @@ function Matched() {
         setIsLoading(false);
         return;
       }
-  
+
       try {
         const response = await axios.get("http://localhost:3001/matched-job-seekers", {
           params: { username },
         });
-  
-        console.log("Matched Job Seekers Data:", response.data.matchedJobSeekers); // Debugging
-  
+
         if (response.data.success) {
           setMatchedJobSeekers(response.data.matchedJobSeekers);
         } else {
@@ -45,52 +47,83 @@ function Matched() {
         setIsLoading(false);
       }
     };
-  
+
     fetchMatchedJobSeekers();
   }, [username]);
-  
 
-  // Handle accept or reject decision
-  const handleDecision = async (seekerUsername, postId, decision) => {
+  const downloadPDF = (pdfData, fileName) => {
     try {
-      const employerUsername = getCookie("username");
-  
-      console.log("Employer Username:", employerUsername);
-      console.log("Seeker Username:", seekerUsername);
-      console.log("Post ID:", postId);
-      console.log("Decision:", decision);
-  
-      if (!employerUsername || !seekerUsername || !postId || !decision) {
-        console.error("Missing required fields!");
-        alert("Missing required fields. Please check the data.");
-        return;
-      }
-  
-      const response = await axios.post("http://localhost:3001/process-decision", {
-        employerUsername,
-        seekerUsername,
-        postId,
-        decision,
-      });
-  
-      if (response.data.success) {
-        alert(response.data.message);
-  
-        // Remove rejected candidates from the list
-        if (decision === "no") {
-          setMatchedJobSeekers((prevSeekers) =>
-            prevSeekers.filter((seeker) => seeker.username !== seekerUsername)
-          );
-        }
-      } else {
-        alert("Failed to process decision: " + response.data.message);
-      }
-    } catch (error) {
-      console.error("Error processing decision:", error);
-      alert("An error occurred while processing the decision. Please try again.");
+      const blob = new Blob(
+        [Uint8Array.from(atob(pdfData), (c) => c.charCodeAt(0))],
+        { type: "application/pdf" }
+      );
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to download the PDF. Please try again.");
+      console.error("Error downloading PDF:", err);
     }
   };
-  
+
+  const handleAccept = (seekerUsername, postId) => {
+    setInterviewDetails({ seekerUsername, postId });
+  };
+
+  const saveInterviewDate = async () => {
+    if (!interviewDetails || !selectedDate) {
+      alert("Please select an interview date.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:3001/schedule-interview", {
+        employerUsername: username,
+        seekerUsername: interviewDetails.seekerUsername,
+        postId: interviewDetails.postId,
+        interviewDate: selectedDate,
+      });
+
+      if (response.data.success) {
+        alert("Interview date scheduled successfully!");
+        setSelectedDate(null);
+        setInterviewDetails(null);
+      } else {
+        alert("Failed to schedule interview: " + response.data.message);
+      }
+    } catch (err) {
+      console.error("Error scheduling interview:", err);
+      alert("An error occurred while scheduling the interview.");
+    }
+  };
+
+  const handleReject = async (seekerUsername, postId) => {
+    try {
+      const response = await axios.post("http://localhost:3001/process-decision", {
+        employerUsername: username,
+        seekerUsername,
+        postId,
+        decision: "no",
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+        setMatchedJobSeekers((prevSeekers) =>
+          prevSeekers.filter((seeker) => seeker.username !== seekerUsername)
+        );
+      } else {
+        alert("Failed to process rejection: " + response.data.message);
+      }
+    } catch (error) {
+      console.error("Error rejecting candidate:", error);
+      alert("An error occurred while rejecting the candidate.");
+    }
+  };
 
   return (
     <div className="container mt-5">
@@ -124,25 +157,53 @@ function Matched() {
                 {seeker.preferredJobType || "Not specified"}
               </p>
               <p>
-                <strong>Post ID:</strong> {seeker.postId || "Missing Post ID"} {/* Debugging */}
+                <strong>Post ID:</strong> {seeker.postId || "Missing Post ID"}
               </p>
+              {seeker.pdfData && (
+                <p>
+                  <strong>CV:</strong>{" "}
+                  <button
+                    className="btn btn-link"
+                    onClick={() =>
+                      downloadPDF(seeker.pdfData, `${seeker.firstName}_${seeker.lastName}_CV.pdf`)
+                    }
+                  >
+                    Download CV
+                  </button>
+                </p>
+              )}
               <div className="mt-3">
                 <button
                   className="btn btn-success me-2"
-                  onClick={() => handleDecision(seeker.username, seeker.postId, "yes")}
+                  onClick={() => handleAccept(seeker.username, seeker.postId)}
                 >
                   Accept
                 </button>
                 <button
                   className="btn btn-danger"
-                  onClick={() => handleDecision(seeker.username, seeker.postId, "no")}
+                  onClick={() => handleReject(seeker.username, seeker.postId)}
                 >
                   Reject
                 </button>
               </div>
             </div>
           ))}
-        </div> 
+        </div>
+      )}
+
+      {interviewDetails && (
+        <div className="mt-4">
+          <h4>Schedule Interview</h4>
+          <DatePicker
+            selected={selectedDate}
+            onChange={(date) => setSelectedDate(date)}
+            minDate={new Date()}
+            placeholderText="Select interview date"
+          />
+          <button className="btn btn-primary mt-3" onClick={saveInterviewDate}>
+            Save Interview Date
+          </button>
+        </div>
       )}
     </div>
   );
