@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import FullCalendar from "@fullcalendar/react"; // Import FullCalendar
-import dayGridPlugin from "@fullcalendar/daygrid"; // For day grid view
-import interactionPlugin from "@fullcalendar/interaction"; // For user interactions
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
 import Cookies from "js-cookie";
 import axios from "axios";
 
@@ -18,13 +18,11 @@ function Calendar() {
       }
 
       try {
-        // Fetch interviews from the backend
         const response = await axios.get("http://localhost:3001/interview-schedule", {
           params: { username },
         });
 
         if (response.data.success) {
-          // Format the interview data into FullCalendar event objects
           const formattedEvents = response.data.interviews.map((interview) => ({
             title: `Interview for Post ID: ${interview.postId}`,
             start: new Date(interview.interviewDate).toISOString(),
@@ -43,45 +41,55 @@ function Calendar() {
   }, [username]);
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Your Calendar</h1>
-      {error ? (
-        <p style={styles.error}>{error}</p>
-      ) : (
-        <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,dayGridWeek,dayGridDay",
-          }}
-          height="auto"
-        />
-      )}
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <h1 style={styles.title}>Your Calendar</h1>
+        {error ? (
+          <p style={styles.error}>{error}</p>
+        ) : (
+          <FullCalendar
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={events}
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,dayGridWeek,dayGridDay",
+            }}
+            height="auto"
+          />
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
+  page: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #FFA500, #0056b3)", // Fading orange-to-blue gradient
+    fontFamily: "'Poppins', sans-serif", // Modern font
+  },
   container: {
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "20px",
+    width: "800px",
+    backgroundColor: "white", // White calendar container
+    color: "#333",
+    borderRadius: "10px",
+    padding: "30px",
+    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
     textAlign: "center",
-    backgroundColor: "#f9f9f9",
-    borderRadius: "8px",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
   },
   title: {
-    fontSize: "2rem",
+    fontSize: "2.5rem",
     marginBottom: "20px",
-    color: "#333",
+    color: "#0056b3", // Deep blue title
   },
   error: {
-    color: "red",
     fontSize: "1.2rem",
+    color: "#e63946", // Red for errors
   },
 };
 

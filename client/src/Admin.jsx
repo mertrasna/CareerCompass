@@ -439,10 +439,12 @@ const Admin = () => {
       <style jsx>{`
         .admin-container {
           padding: 20px;
+          background-color: #f9f9f9;
         }
         .admin-title {
           font-size: 24px;
           margin-bottom: 20px;
+          color: #003366; /* Blue color */
         }
         .filter-container {
           margin-bottom: 20px;
@@ -453,6 +455,12 @@ const Admin = () => {
           margin-right: 10px;
           padding: 10px;
           font-size: 16px;
+          border-radius: 5px;
+          border: 1px solid #ddd;
+        }
+        .role-filter,
+        .subscription-filter {
+          background-color: white;
         }
         .admin-table,
         .user-details-table {
@@ -467,6 +475,11 @@ const Admin = () => {
           padding: 8px;
           text-align: left;
         }
+        .admin-table th,
+        .user-details-table th {
+          background-color: #003366; /* Dark blue background */
+          color: white;
+        }
         .loading-cell {
           text-align: center;
         }
@@ -479,6 +492,33 @@ const Admin = () => {
         }
         .back-button:hover {
           background-color: #e0e0e0;
+        }
+        .table-container {
+          background-color: white;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+          cursor: pointer;
+          font-size: 14px;
+          padding: 5px 10px;
+          border: none;
+          border-radius: 5px;
+        }
+        .btn-accept {
+          background-color: #28a745;
+          color: white;
+        }
+        .btn-reject {
+          background-color: #dc3545;
+          color: white;
+        }
+        .btn-accept:hover {
+          background-color: #218838;
+        }
+        .btn-reject:hover {
+          background-color: #c82333;
         }
       `}</style>
     </div>

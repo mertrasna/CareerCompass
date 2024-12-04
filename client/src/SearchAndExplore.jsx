@@ -14,7 +14,6 @@ function SearchAndExplore() {
       return;
     }
 
-    // Fetch swiped "yes" jobs for the user
     const fetchSwipedJobs = async () => {
       try {
         const response = await axios.get("http://localhost:3001/swiped-jobs", {
@@ -23,7 +22,7 @@ function SearchAndExplore() {
 
         if (response.data.success) {
           setJobs(response.data.jobs);
-          setFilteredJobs(response.data.jobs); // Initially show all jobs
+          setFilteredJobs(response.data.jobs);
         } else {
           console.error("Error fetching swiped jobs:", response.data.message);
         }
@@ -39,7 +38,6 @@ function SearchAndExplore() {
     const value = e.target.value;
     setSearchTerm(value);
 
-    // Filter jobs based on search term
     const filtered = jobs.filter((job) =>
       job.title.toLowerCase().includes(value.toLowerCase()) ||
       job.location.toLowerCase().includes(value.toLowerCase()) ||
@@ -49,104 +47,129 @@ function SearchAndExplore() {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Your Saved Jobs</h1>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <h1 style={styles.title}>Your Saved Jobs</h1>
 
-      {/* Search Bar */}
-      <div style={styles.searchBar}>
-        <input
-          type="text"
-          placeholder="Search jobs by title, location, or company..."
-          value={searchTerm}
-          onChange={handleSearch}
-          style={styles.searchInput}
-        />
-      </div>
+        {/* Search Bar */}
+        <div style={styles.searchBar}>
+          <input
+            type="text"
+            placeholder="Search jobs by title, location, or company..."
+            value={searchTerm}
+            onChange={handleSearch}
+            style={styles.searchInput}
+          />
+        </div>
 
-      {/* Job List */}
-      <div style={styles.jobList}>
-        {filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => (
-            <div key={job._id} style={styles.jobCard}>
-              <h2 style={styles.jobTitle}>{job.title}</h2>
-              <p style={styles.jobCompany}>Company: {job.companyName}</p>
-              <p style={styles.jobLocation}>Location: {job.location}</p>
-              <p style={styles.jobDescription}>{job.description}</p>
-              <p style={styles.jobSalary}>
-                Salary: ${job.salaryRange.min} - ${job.salaryRange.max}
-              </p>
-              <p style={styles.jobStatus}>
-                <strong>Application Status:</strong> {job.status || "Pending"}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p style={styles.noJobs}>No saved jobs found</p>
-        )}
+        {/* Job List */}
+        <div style={styles.jobList}>
+          {filteredJobs.length > 0 ? (
+            filteredJobs.map((job) => (
+              <div key={job._id} style={styles.jobCard}>
+                <h2 style={styles.jobTitle}>{job.title}</h2>
+                <p style={styles.jobCompany}>{job.companyName}</p>
+                <p style={styles.jobLocation}>{job.location}</p>
+                <p
+                  style={
+                    job.status === "Accepted"
+                      ? styles.statusAccepted
+                      : job.status === "Rejected"
+                      ? styles.statusRejected
+                      : styles.statusPending
+                  }
+                >
+                  {job.status || "Pending"}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p style={styles.noJobs}>No saved jobs found</p>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    maxWidth: "800px",
-    margin: "0 auto",
+  page: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #FFA500, #0056b3)", // Fading orange-to-blue gradient
+    fontFamily: "'Poppins', sans-serif", // Modern font
     padding: "20px",
+  },
+  container: {
+    width: "90%",
+    maxWidth: "1000px",
+    backgroundColor: "white",
+    color: "#333",
+    borderRadius: "10px",
+    padding: "20px",
+    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
     textAlign: "center",
   },
   title: {
-    fontSize: "2.5rem",
-    marginBottom: "20px",
-    color: "#333",
+    fontSize: "2rem",
+    marginBottom: "15px",
+    color: "#0056b3",
   },
   searchBar: {
-    marginBottom: "20px",
+    marginBottom: "15px",
   },
   searchInput: {
     width: "100%",
-    padding: "10px",
+    padding: "8px",
     fontSize: "1rem",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
   },
   jobList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", // Smaller, compact two-column layout
+    gap: "15px",
   },
   jobCard: {
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    padding: "20px",
-    backgroundColor: "#f9f9f9",
+    border: "1px solid orange",
+    borderRadius: "10px",
+    padding: "15px",
+    backgroundColor: "#fefefe", // Subtle white background
+    boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
     textAlign: "left",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   jobTitle: {
-    fontSize: "1.5rem",
-    marginBottom: "10px",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    marginBottom: "5px",
     color: "#333",
   },
   jobCompany: {
+    fontSize: "0.9rem",
     marginBottom: "5px",
     color: "#555",
   },
   jobLocation: {
+    fontSize: "0.9rem",
     marginBottom: "5px",
-    color: "#555",
-  },
-  jobDescription: {
-    marginBottom: "10px",
     color: "#777",
   },
-  jobSalary: {
+  statusAccepted: {
+    fontSize: "0.85rem",
+    color: "green",
     fontWeight: "bold",
-    color: "#333",
   },
-  jobStatus: {
-    fontSize: "1rem",
-    color: "#007bff",
+  statusRejected: {
+    fontSize: "0.85rem",
+    color: "red",
+    fontWeight: "bold",
+  },
+  statusPending: {
+    fontSize: "0.85rem",
+    color: "grey",
+    fontWeight: "bold",
   },
   noJobs: {
     color: "#999",

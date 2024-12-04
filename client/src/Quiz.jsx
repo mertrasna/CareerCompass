@@ -1,14 +1,11 @@
+import axios from 'axios';
 import Cookies from 'js-cookie';
 import React, { useState } from 'react';
-import axios from 'axios'; // 
 
-
-// Replace with your Adzuna App ID and API Key
 const appId = "6e1ce45d";
 const apiKey = "9939d5235fd78dee6f4aa9cf2b239580";
 
 function Quiz() {
-  // Mapping personality types to job-related keywords
   const jobKeywords = {
     ENTP: ["entrepreneur", "product manager", "consultant", "marketing", "startup"],
     ENFJ: ["teacher", "counselor", "public relations", "event planner"],
@@ -18,7 +15,6 @@ function Quiz() {
     ISFP: ["musician", "artist", "photographer", "interior designer"],
     ISTP: ["mechanic", "engineer", "architect", "surgeon"],
     INFJ: ["psychiatrist", "therapist", "writer", "advocate"],
-    // Add more personality types and corresponding job keywords as needed
   };
 
   const questions = [
@@ -62,17 +58,59 @@ function Quiz() {
         { text: "Strongly Disagree", value: -2 },
       ],
     },
+    {
+      question: "You often find yourself in new situations and enjoy the challenge of adapting.",
+      options: [
+        { text: "Strongly Agree", value: 2 },
+        { text: "Agree", value: 1 },
+        { text: "Neutral", value: 0 },
+        { text: "Disagree", value: -1 },
+        { text: "Strongly Disagree", value: -2 },
+      ],
+    },
+    {
+      question: "You tend to avoid conflict and try to maintain harmony in your relationships.",
+      options: [
+        { text: "Strongly Agree", value: -2 },
+        { text: "Agree", value: -1 },
+        { text: "Neutral", value: 0 },
+        { text: "Disagree", value: 1 },
+        { text: "Strongly Disagree", value: 2 },
+      ],
+    },
+    {
+      question: "You prefer a flexible and spontaneous approach to life rather than a structured one.",
+      options: [
+        { text: "Strongly Agree", value: 2 },
+        { text: "Agree", value: 1 },
+        { text: "Neutral", value: 0 },
+        { text: "Disagree", value: -1 },
+        { text: "Strongly Disagree", value: -2 },
+      ],
+    },
+    {
+      question: "You are more interested in ideas and concepts than in facts and details.",
+      options: [
+        { text: "Strongly Agree", value: 2 },
+        { text: "Agree", value: 1 },
+        { text: "Neutral", value: 0 },
+        { text: "Disagree", value: -1 },
+        { text: "Strongly Disagree", value: -2 },
+      ],
+    },
   ];
+  
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [jobSuggestions, setJobSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [hoveredOption, setHoveredOption] = useState(null);
+  const [hoveredQuestion, setHoveredQuestion] = useState(false);
 
   const handleOptionClick = (value) => {
     setResponses([...responses, value]);
-
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
@@ -83,23 +121,15 @@ function Quiz() {
 
   const fetchJobSuggestions = async () => {
     setLoading(true);
-
-    // Calculate personality type based on responses
     const personalityType = calculatePersonalityType();
     const keywords = jobKeywords[personalityType] || [];
     savePersonalityType(personalityType);
-
     try {
-      // Join keywords into a string to use in the API query
-      const keywordQuery = keywords.join(","); // Example: "entrepreneur, consultant, marketing"
-      
-      // Fetch job listings from Adzuna API using the keyword query
+      const keywordQuery = keywords.join(",");
       const response = await fetch(
         `http://api.adzuna.com/v1/api/jobs/gb/search/1?app_id=${appId}&app_key=${apiKey}&results_per_page=10&what=${keywordQuery}&content-type=application/json`
       );
-
       const data = await response.json();
-
       if (data.results && data.results.length > 0) {
         setJobSuggestions(data.results);
       } else {
@@ -109,40 +139,31 @@ function Quiz() {
       console.error("Error fetching job suggestions:", error);
       setJobSuggestions([]);
     }
-
     setLoading(false);
   };
 
   const savePersonalityType = async (personalityType) => {
     try {
-      // Retrieve username from cookies
-      const username = Cookies.get('username');  // Assuming 'username' is stored in cookies
-  
+      const username = Cookies.get('username');
       if (!username) {
         console.error("Username not found in cookies.");
         return;
       }
-  
-      // Make an Axios POST request to save the personality type
       await axios.post('http://localhost:3001/api/savePersonalityType', {
         username,
         personalityType,
       });
-  
-      console.log("Personality type saved successfully!");
     } catch (error) {
       console.error("Error saving personality type:", error);
     }
   };
-  
 
   const calculatePersonalityType = () => {
-    // Logic to calculate personality type (e.g., ENTP, INTJ, etc.) based on quiz responses
     const types = [
-      responses[0] >= 0 ? "E" : "I", // Extraverted vs Introverted
-      responses[1] >= 0 ? "N" : "S", // Intuitive vs Sensing
-      responses[2] >= 0 ? "T" : "F", // Thinking vs Feeling
-      responses[3] >= 0 ? "J" : "P", // Judging vs Perceiving
+      responses[0] >= 0 ? "E" : "I",
+      responses[1] >= 0 ? "N" : "S",
+      responses[2] >= 0 ? "T" : "F",
+      responses[3] >= 0 ? "J" : "P",
     ];
     return types.join("");
   };
@@ -152,20 +173,22 @@ function Quiz() {
   if (showResult) {
     return (
       <div style={styles.container}>
-        <h2>Job Suggestions</h2>
+        <h2 style={styles.resultTitle}>ESFP</h2>
         {loading ? (
           <p>Loading job suggestions...</p>
         ) : jobSuggestions.length > 0 ? (
-          jobSuggestions.map((job, index) => (
-            <div key={index} style={styles.jobContainer}>
-              <h4>{job.title}</h4>
-              <p>Company: {job.company.display_name}</p>
-              <p>Location: {job.location.display_name}</p>
-              <a href={job.redirect_url} target="_blank" rel="noopener noreferrer">
-                View Job
-              </a>
-            </div>
-          ))
+          <div style={styles.carouselContainer}>
+            {jobSuggestions.map((job, index) => (
+              <div key={index} style={styles.jobCard}>
+                <h4>{job.title}</h4>
+                <p>Company: {job.company.display_name}</p>
+                <p>Location: {job.location.display_name}</p>
+                <a href={job.redirect_url} target="_blank" rel="noopener noreferrer">
+                  View Job
+                </a>
+              </div>
+            ))}
+          </div>
         ) : (
           <p>No job suggestions found.</p>
         )}
@@ -178,20 +201,43 @@ function Quiz() {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Quiz</h2>
       <div style={styles.progressBarContainer}>
-        <div style={{ ...styles.progressBar, width: `${progress}%` }}></div>
+        <div
+          style={{
+            ...styles.progressBar,
+            width: `${progress}%`,
+            transition: "width 0.5s ease-out",
+          }}
+        ></div>
       </div>
       <div style={styles.questionContainer}>
-        <h3>{questions[currentQuestionIndex].question}</h3>
+        <div
+          style={{
+            ...styles.questionBox,
+            borderColor: hoveredQuestion ? "#007BFF" : "white",
+            color: hoveredQuestion ? "#007BFF" : "white",
+            backgroundColor: hoveredQuestion ? "white" : "transparent",
+          }}
+          onMouseEnter={() => setHoveredQuestion(true)}
+          onMouseLeave={() => setHoveredQuestion(false)}
+        >
+          <h3 style={styles.questionNumber}>Question {currentQuestionIndex + 1} of {questions.length}</h3>
+          <p>{questions[currentQuestionIndex].question}</p>
+        </div>
         <div style={styles.optionsContainer}>
           {questions[currentQuestionIndex].options.map((option, index) => (
             <button
               key={index}
-              style={styles.optionButton}
+              style={{
+                ...styles.optionButton,
+                borderColor: hoveredOption === index ? "#007BFF" : "#ddd",
+                color: hoveredOption === index ? "#007BFF" : "#fff",
+              }}
               onClick={() => handleOptionClick(option.value)}
+              onMouseEnter={() => setHoveredOption(index)}
+              onMouseLeave={() => setHoveredOption(null)}
             >
-              {option.text}
+              <span style={styles.optionCircle}>{String.fromCharCode(65 + index)}</span> {option.text}
             </button>
           ))}
         </div>
@@ -208,16 +254,10 @@ const styles = {
     alignItems: "center",
     minHeight: "100vh",
     padding: "20px",
-    background: "#F4F6F8",
+    background: "#FF7518",
     color: "#333",
     textAlign: "center",
     fontFamily: "'San Francisco', 'Helvetica Neue', sans-serif",
-  },
-  title: {
-    fontSize: "36px",
-    fontWeight: "600",
-    marginBottom: "20px",
-    color: "#1C1C1C",
   },
   progressBarContainer: {
     width: "100%",
@@ -232,31 +272,74 @@ const styles = {
     borderRadius: "5px",
   },
   questionContainer: {
-    marginBottom: "30px",
+    width: "80%",
+    maxWidth: "700px",
+    margin: "20px 0",
+  },
+  questionBox: {
+    border: "2px solid white",
+    borderRadius: "10px",
+    padding: "20px",
+    marginBottom: "20px",
+    transition: "all 0.3s",
+  },
+  questionNumber: {
+    fontSize: "18px",
+    marginBottom: "10px",
+    fontWeight: "bold",
   },
   optionsContainer: {
     display: "flex",
     flexDirection: "column",
     gap: "15px",
-    margin: "20px 0",
   },
   optionButton: {
-    padding: "12px",
-    border: "none",
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    padding: "12px 20px",
+    border: "1px solid #ddd",
     borderRadius: "10px",
     cursor: "pointer",
-    background: "#4A90E2",
-    color: "#fff",
+    background: "transparent",
     fontSize: "18px",
-    transition: "background 0.3s",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+    transition: "all 0.3s",
+    textAlign: "left",
   },
-  jobContainer: {
-    margin: "20px 0",
+  optionCircle: {
+    position: "absolute",
+    top: "50%",
+    left: "-20px",
+    transform: "translateY(-50%)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "30px",
+    height: "30px",
+    backgroundColor: "#fff",
+    color: "#007BFF",
+    borderRadius: "50%",
+    fontSize: "16px",
+    fontWeight: "bold",
+    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+  },
+  jobCard: {
+    display: "flex",
+    flexDirection: "column",
+    width: "30%",
+    margin: "10px",
     padding: "15px",
     background: "#f9f9f9",
     borderRadius: "8px",
     boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+    textAlign: "left",
+  },
+  carouselContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    padding: "10px 0",
+    marginTop: "20px",
   },
   button: {
     padding: "12px 24px",
@@ -267,6 +350,35 @@ const styles = {
     cursor: "pointer",
     fontSize: "16px",
     marginTop: "20px",
+  },
+  resultTitle: {
+    fontSize: "36px",
+    fontWeight: "bold",
+    letterSpacing: "2px",
+    color: "#fff",
+    textTransform: "uppercase",
+    marginBottom: "20px",
+    fontFamily: "'Poppins', sans-serif",
+    textShadow: "2px 2px 4px rgba(0, 0, 0, 0.4)",
+  },
+  '@media (max-width: 768px)': {
+    container: {
+      padding: "10px",
+    },
+    questionContainer: {
+      width: "90%",
+    },
+    questionBox: {
+      padding: "15px",
+    },
+    optionButton: {
+      fontSize: "16px",
+      padding: "10px 18px",
+    },
+    jobCard: {
+      width: "100%",
+      marginBottom: "20px",
+    },
   },
 };
 

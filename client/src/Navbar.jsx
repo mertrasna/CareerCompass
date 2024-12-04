@@ -1,152 +1,122 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiSearch, FiCalendar, FiBell } from "react-icons/fi"; // Import icons from react-icons
+import { FiSearch, FiCalendar, FiBell } from "react-icons/fi";
 
 function Navbar({ userRole }) {
   return (
     <nav style={styles.navbar}>
-      {/* Left Section */}
+      {/* Left Section: Logo and Icons */}
       <div style={styles.left}>
         <div style={styles.logo}>
-          <Link to="/home" style={styles.link}>
+          <Link to="/home" style={styles.logoLink}>
             CareerCompass
+          </Link>
+        </div>
+        <div style={styles.icons}>
+          {userRole === "job_seeker" && (
+            <Link to="/search" style={styles.iconLink}>
+              <FiSearch style={styles.icon} />
+            </Link>
+          )}
+          <Link to="/calendar" style={styles.iconLink}>
+            <FiCalendar style={styles.icon} />
+          </Link>
+          <Link to="/notifications" style={styles.iconLink}>
+            <FiBell style={styles.icon} />
           </Link>
         </div>
       </div>
 
-      {/* Middle Section */}
-      <ul style={styles.middle}>
-        {/* Conditionally render the search icon for job_seekers only */}
-        {userRole === "job_seeker" && (
-          <li>
-            <Link to="/search" style={styles.searchLink}>
-              <FiSearch style={styles.icon} />
-            </Link>
-          </li>
-        )}
-        <li>
-          <Link to="/calendar" style={styles.searchLink}>
-            <FiCalendar style={styles.icon} />
-          </Link>
-        </li>
-        <li>
-          <Link to="/notifications" style={styles.searchLink}>
-            <FiBell style={styles.icon} />
-          </Link>
-        </li>
-      </ul>
-
-      {/* Right Section */}
-      <ul style={styles.right}>
-        <li>
-          <Link to="/settings" style={styles.link}>
-            Settings
-          </Link>
-        </li>
+      {/* Right Section: Navigation Words */}
+      <div style={styles.right}>
+        <Link to="/settings" style={styles.navLink}>
+          Settings
+        </Link>
         {userRole === "job_seeker" && (
           <>
-            <li>
-              <Link to="/subscription" style={styles.link}>
-                Subscription
-              </Link>
-            </li>
-            <li>
-              <Link to="/profile" style={styles.link}>
-                User Profile
-              </Link>
-            </li>
-            <li>
-              <Link to="/quiz" style={styles.link}>
-                Quiz
-              </Link>
-            </li>
-            <li>
-              <Link to="/payment" style={styles.link}>
-                Payment
-              </Link>
-            </li>
-            <li>
-              <Link to="/matchmaking" style={styles.link}>
-                Matchmaking
-              </Link>
-            </li>
+            <Link to="/subscription" style={styles.navLink}>
+              Subscription
+            </Link>
+            <Link to="/profile" style={styles.navLink}>
+              User Profile
+            </Link>
+            <Link to="/matchmaking" style={styles.navLink}>
+              Matchmaking
+            </Link>
           </>
         )}
         {userRole === "employer" && (
           <>
-            <li>
-              <Link to="/post" style={styles.link}>
-                Post a Job
-              </Link>
-            </li>
-            <li>
-              <Link to="/matchedcandidates" style={styles.link}>
-                Matched Candidates
-              </Link>
-            </li>
-            <li>
-              <Link to="/viewjob" style={styles.link}>
-                View Job Ads
-              </Link>
-            </li>
+            <Link to="/post" style={styles.navLink}>
+              Post a Job
+            </Link>
+            <Link to="/matchedcandidates" style={styles.navLink}>
+              Matched Candidates
+            </Link>
+            <Link to="/viewjob" style={styles.navLink}>
+              View Job Ads
+            </Link>
           </>
         )}
-      </ul>
+      </div>
     </nav>
   );
 }
 
 const styles = {
   navbar: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     padding: "10px 20px",
-    backgroundColor: "#333",
+    backgroundColor: "transparent", // Fully transparent background
     color: "#fff",
-    zIndex: 10,
+    position: "fixed",
+    top: 0,
+    width: "100%",
+    zIndex: 1000,
   },
   left: {
     display: "flex",
     alignItems: "center",
   },
   logo: {
+    marginRight: "20px",
     fontSize: "1.5rem",
     fontWeight: "bold",
-    marginRight: "20px",
   },
-  middle: {
+  logoLink: {
+    color: "#fff",
+    textDecoration: "none",
+  },
+  icons: {
     display: "flex",
-    listStyle: "none",
-    margin: 0,
-    padding: 0,
-    alignItems: "center",
+    gap: "15px",
+  },
+  iconLink: {
+    color: "inherit",
+    textDecoration: "none",
+  },
+  icon: {
+    fontSize: "1.5rem",
+    cursor: "pointer",
   },
   right: {
     display: "flex",
-    listStyle: "none",
-    margin: 0,
-    padding: 0,
+    alignItems: "center",
+    gap: "20px",
   },
-  searchLink: {
-    textDecoration: "none",
-    color: "inherit",
-    margin: "0 15px",
-  },
-  link: {
+  navLink: {
     color: "#fff",
     textDecoration: "none",
-    marginLeft: "15px",
     fontSize: "1rem",
+    padding: "8px 12px", // Add padding for the rounded box
+    borderRadius: "20px", // Rounded corners
+    transition: "background-color 0.3s ease", // Smooth transition
   },
-  icon: {
-    fontSize: "1.5rem", // Adjust icon size
-    color: "#fff", // Icon color
-    cursor: "pointer",
+  navLinkHover: {
+    backgroundColor: "#E0D7FF", // Light purple on hover
+    color: "#7C4DFF", // Text color on hover
   },
 };
 

@@ -84,7 +84,7 @@ function Home() {
   const translatePage = async (language) => {
     const apiKey = "4Iy5N6M88saTRMTKysR1wE1ya4lGvvo4a2WEPscM7f9Fr30Zas5vJQQJ99AKAC5RqLJXJ3w3AAAbACOG72Sn"; // Replace with your Azure Translator API key
     const endpoint = "https://api.cognitive.microsofttranslator.com/translate";
-    const region = "westeurope"; // Replace with your Azure resource region (e.g., "eastus")
+    const region = "westeurope"; 
 
     const elements = document.querySelectorAll("[data-translate]");
     const texts = Array.from(elements).map((el) => el.textContent);
@@ -118,9 +118,7 @@ function Home() {
   return (
     <div>
       <Navbar userRole={userRole} />
-      <h1 data-translate="welcomeMessage">Welcome to CareerCompass!</h1>
-      <p data-translate="description">Your gateway to a fulfilling career.</p>
-
+    
       {/* Language Switcher Dropdown */}
       <select id="languageSwitcher" onChange={handleLanguageChange}>
         <option value="en">English</option>
@@ -129,67 +127,45 @@ function Home() {
         <option value="de">German</option>
       </select>
 
-      {/* Conditional Content Based on User Role */}
       {userRole === "job_seeker" ? (
-        <>
-          <h2 data-translate="jobSeekerWelcome">Welcome, Job Seeker!</h2>
-          <button onClick={() => navigate("/quiz")} data-translate="startQuiz">
-            Start Quiz
-          </button>
-          <button onClick={() => navigate("/builder")} data-translate="goToBuilder">
-            Go to Builder
-          </button>
-          <button onClick={() => navigate("/profile")} data-translate="viewProfile">
-            View Profile
-          </button>
-        </>
-      ) : userRole === "employer" ? (
-        <>
-          <h2 data-translate="employerWelcome">Welcome, Employer!</h2>
-          <button onClick={() => navigate("/post-job")} data-translate="postJob">
-            Post a Job
-          </button>
-          <button onClick={() => navigate("/matched-candidates")} data-translate="viewMatchedCandidates">
-            View Matched Candidates
-          </button>
-        </>
-      ) : userRole === "admin" ? (
-        <>
-          <h2 data-translate="adminWelcome">Welcome, Admin!</h2>
-          <p>Admin Dashboard</p>
-        </>
-      ) : (
-        <p>Role not found. Please log in again.</p>
-      )}
-
-      {/* Upload Document Button */}
-      <div>
-        <h2 data-translate="uploadDocumentTitle">Upload Document</h2>
-        <button onClick={openModal} data-translate="uploadButton">Upload Document</button>
+  <>
+    <h2 data-translate="jobSeekerWelcome">Welcome, Job Seeker!</h2>
+    <div style={styles.container}>
+      {/* Left Section */}
+      <div style={styles.left}>
+      <h2 style={styles.heading}>WHAT'S YOUR PERFECT JOB? FIND OUT NOW</h2>
+        <button style={styles.buttonleft} onClick={() => navigate("/quiz")}>
+          Take Personality Quiz
+        </button>
       </div>
 
-      {/* Document Upload Modal */}
-      {isModalOpen && (
-        <div style={styles.modal}>
-          <div style={styles.modalContent}>
-            <h2 data-translate="chooseDocument">Choose a Document to Upload</h2>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx,.txt,.jpg,.png"
-              onChange={handleFileChange}
-              style={styles.fileInput}
-            />
-            <div style={styles.modalButtons}>
-              <button onClick={closeModal} style={styles.cancelButton} data-translate="cancelButton">
-                Cancel
-              </button>
-              <button onClick={uploadDocument} style={styles.confirmButton} data-translate="confirmButton">
-                Confirm Upload
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Right Section */}
+      <div style={styles.right}>
+      <h2 style={styles.heading}>YOUR DREAM JOB IS WAITING FOR YOU!</h2>
+        <button style={styles.buttonright} onClick={() => navigate("/Matchmaking")}>
+          Start Matching
+        </button>
+        <button style={styles.buttonright} onClick={() => navigate("/Builder")}>
+          CV
+        </button>
+      </div>
+    </div>
+  </>
+) : userRole === "employer" ? (
+  <>
+    <h2 data-translate="employerWelcome">Welcome, Employer!</h2>
+  </>
+) : userRole === "admin" ? (
+  <>
+    <h2 data-translate="adminWelcome">Welcome, Admin!</h2>
+    <p>Admin Dashboard</p>
+  </>
+) : (
+  <p>Role not found. Please log in again.</p>
+)}
+
+      
+
     </div>
   );
 }
@@ -236,6 +212,76 @@ const styles = {
   },
   fileInput: {
     marginTop: "10px",
+  },
+  container: {
+    display: "flex",
+    height: "100vh", // Full height of the viewport
+    width: "100vw",  // Full width of the viewport
+    position: "relative", // Positioning for the fixed elements
+    overflow: "hidden", // Prevent scrolling within the container
+  },
+  left: {
+    position: "fixed", // Fix the left section to the viewport
+    top: 0, // Align with the top of the viewport
+    left: 0, // Align with the left of the viewport
+    width: "50vw", // Take up 50% of the viewport width
+    height: "100vh", // Full height of the viewport
+    display: "flex",
+    justifyContent: "center", // Center content vertically
+    alignItems: "center", // Center content horizontally
+    background: "#007BFF", // Gradient background
+    color: "white", // White text color for contrast
+    padding: "20px", // Add padding around content
+    textAlign: "center", // Center the text
+    flexDirection: "column",
+    
+  },
+  heading: {
+    fontSize: "32px", // Larger, more striking font size
+    fontWeight: "bold", // Bold the heading
+    textTransform: "uppercase", // Make the heading uppercase for impact
+    letterSpacing: "2px", // Add some space between letters for better readability
+    marginBottom: "30px", // Increase space between heading and button
+    lineHeight: "1.4", // Improve line spacing for better text flow
+  },
+  right: {
+    position: "fixed", // Fix the right section to the viewport
+    top: 0, // Align with the top of the viewport
+    right: 0, // Align with the right of the viewport
+    width: "50vw", // Take up 50% of the viewport width
+    height: "100vh", // Full height of the viewport
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FF7518", // Orange background
+    color: "white", // White text color for contrast
+    padding: "20px", // Add padding around content
+    textAlign: "center", // Center the text
+    flexDirection: "column",
+  },
+  buttonleft: {
+    padding: "15px 30px",
+    fontSize: "18px",
+    backgroundColor:"#007BFF", // Make the button color stand out
+    color: "white", // White text color
+    border: "2px solid white",
+    borderRadius: "30px", // Make the button more rounded
+    cursor: "pointer",
+    fontWeight: "bold", // Bold text on the button for emphasis
+    transition: "all 0.3s ease", // Smooth transition for hover effect
+    marginTop: "20px", // Add margin to move the button away from the heading
+  },
+  buttonright: {
+    padding: "15px 30px",
+    fontSize: "18px",
+    backgroundColor:"#FF7518", // Make the button color stand out
+    color: "white", // White text color
+    border: "2px solid white",
+    borderRadius: "30px", // Make the button more rounded
+    cursor: "pointer",
+    fontWeight: "bold", // Bold text on the button for emphasis
+    transition: "all 0.3s ease", // Smooth transition for hover effect
+    marginTop: "20px", // Add margin to move the button away from the heading
   },
 };
 

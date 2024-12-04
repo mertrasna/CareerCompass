@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "react-google-login"; // Import Google login
 import { gapi } from "gapi-script"; // Required for older versions of react-google-login
-import Cookies from 'js-cookie'; // For saving cookies
+import Cookies from "js-cookie"; // For saving cookies
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Eye icons for password toggle
 
 function Login() {
   const navigate = useNavigate();
@@ -83,29 +84,82 @@ function Login() {
 
   return (
     <div
-      className="d-flex justify-content-center align-items-center vh-100"
       style={{
-        position: "relative",
-        overflow: "hidden",
-        background: "url(/career-compass-bg.jpg) center center fixed",
-        backgroundSize: "cover",
+        background: "linear-gradient(to right, #007BFF, #FFA500)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        paddingTop: "20px",
+        color: "#fff",
       }}
     >
-      <div
-        className="p-4 rounded w-25"
+      {/* Header Section */}
+      <header
         style={{
-          position: "absolute",
-          zIndex: 1,
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
-          color: "white",
-          fontFamily: "Helvetica, Arial, sans-serif",
+          width: "100%",
+          padding: "10px 20px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <h2 className="text-center mb-4">CareerCompass Login</h2>
+        <h1
+          style={{
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: "24px",
+            color: "#fff",
+            fontWeight: "bold",
+            margin: 0,
+          }}
+        >
+          CareerCompass
+        </h1>
+      </header>
+
+      {/* Tagline Above the Form */}
+      <h2
+        style={{
+          textAlign: "center",
+          fontWeight: "bold",
+          marginBottom: "20px",
+          color: "#fff",
+          fontSize: "28px",
+          padding: "20px",
+          background: "rgba(0, 0, 0, 0.3)",
+          borderRadius: "8px",
+          width: "30%",
+          marginTop: "20px",
+        }}
+      >
+        Match. Work. Thrive.
+      </h2>
+
+      {/* Login Form Section */}
+      <div
+        style={{
+          background: "#fff",
+          padding: "20px",
+          borderRadius: "12px",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+          maxWidth: "350px",  // Reduced width of modal box
+          width: "100%",
+        }}
+      >
+        <h2
+          style={{
+            textAlign: "center",
+            color: "#333",
+            marginBottom: "20px",
+            fontWeight: "bold",
+          }}
+        >
+          Login
+        </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label htmlFor="username" className="form-label">
-              <strong>Username</strong>
+            <label htmlFor="username" style={{ color: "#333" }}>
+              Username
             </label>
             <input
               type="text"
@@ -118,8 +172,8 @@ function Login() {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="password" className="form-label">
-              <strong>Password</strong>
+            <label htmlFor="password" style={{ color: "#333" }}>
+              Password
             </label>
             <input
               type="password"
@@ -137,6 +191,33 @@ function Login() {
           </button>
         </form>
 
+        {/* Divider with OR */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            margin: "20px 0",
+            textAlign: "center",
+          }}
+        >
+          <hr
+            style={{
+              flex: 1,
+              borderColor: "#ddd",
+              marginRight: "10px",
+            }}
+          />
+          <span style={{ color: "black" }}>or</span>  {/* Changed "or" text color to black */}
+          <hr
+            style={{
+              flex: 1,
+              borderColor: "#ddd",
+              marginLeft: "10px",
+            }}
+          />
+        </div>
+
+        {/* Google Login Button */}
         <div className="mt-3 text-center">
           <GoogleLogin
             clientId={clientId}

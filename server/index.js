@@ -551,21 +551,28 @@ app.get("/matched-job-seekers", async (req, res) => {
   }
 
   try {
+    // Find the employer based on username and role
     const employer = await UsersModel.findOne({ username, role: "employer" });
     if (!employer) {
       return res.status(404).json({ success: false, message: "Employer not found" });
     }
 
+    // Fetch posts created by the employer
     const employerPosts = await PostModel.find({ postedBy: employer._id });
     const postIds = employerPosts.map((post) => post._id.toString());
 
+    // Fetch matched job seekers
     const matchedJobSeekers = await UsersModel.find({
       role: "job_seeker",
       swipes: {
-        $elemMatch: { jobId: { $in: postIds }, status: "yes", employerStatus: { $ne: "Rejected" } },
+        $elemMatch: {
+          jobId: { $in: postIds },
+          status: "yes",
+          employerStatus: { $ne: "Rejected" },
+        },
       },
     })
-      .select("username firstName lastName email skills preferredJobType swipes pdfData") // Include pdfData here
+      .select("username firstName lastName email skills preferredJobType swipes pdfData verified") // Include verified field
       .lean();
 
     // Attach postId to each matched job seeker
@@ -579,17 +586,16 @@ app.get("/matched-job-seekers", async (req, res) => {
       };
     });
 
-    console.log("Matched Job Seekers With Post ID:", matchedJobSeekersWithPostId);
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       matchedJobSeekers: matchedJobSeekersWithPostId,
     });
-  } catch (error) {
-    console.error("Error fetching matched job seekers:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+  } catch (err) {
+    console.error("Error fetching matched job seekers:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 app.post("/process-decision", async (req, res) => {
@@ -598,33 +604,32 @@ app.post("/process-decision", async (req, res) => {
 
     // Validate required fields
     if (!employerUsername || !seekerUsername || !postId || !decision) {
-      console.error("Missing required fields:", { employerUsername, seekerUsername, postId, decision });
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // Fetch employer to validate their existence
+    // Fetch employer and seeker to validate their existence
     const employer = await UsersModel.findOne({ username: employerUsername, role: "employer" });
     if (!employer) {
-      console.error("Employer not found for username:", employerUsername);
       return res.status(404).json({ success: false, message: "Employer not found" });
     }
 
-    // Fetch seeker to update their swipe status
     const seeker = await UsersModel.findOne({ username: seekerUsername, role: "job_seeker" });
     if (!seeker) {
-      console.error("Seeker not found for username:", seekerUsername);
       return res.status(404).json({ success: false, message: "Job seeker not found" });
     }
 
-    // Update the specific swipe status in the seeker's document
+    // Find the swipe record
     const swipe = seeker.swipes.find((swipe) => swipe.jobId.toString() === postId);
     if (!swipe) {
-      console.error("Swipe not found for the given postId in seeker's record");
       return res.status(404).json({ success: false, message: "Swipe record not found" });
     }
 
     // Update employerStatus based on decision
-    swipe.employerStatus = decision === "yes" ? "Accepted" : "Rejected";
+    if (decision === "yes") {
+      swipe.employerStatus = "Accepted";
+    } else {
+      swipe.employerStatus = "Rejected";
+    }
 
     // Save the updated seeker document
     await seeker.save();
@@ -639,6 +644,8 @@ app.post("/process-decision", async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
+
+
 
 app.post("/saveCv", (req, res) => {
   const { username, pdfData } = req.body;
@@ -1001,6 +1008,28 @@ app.get("/interview-schedule", async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found." });
   }
   res.status(200).json({ success: true, interviews: user.interviews || [] });
+});
+
+app.post('/updateCardDetails', async (req, res) => {
+  const { username, cardDetails } = req.body;
+
+  try {
+    // Find the user by username and update card details
+    const user = await UsersModel.findOneAndUpdate(
+      { username },
+      { $set: { cardDetails } }, // Update card details field
+      { new: true } // Return the updated user document
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Card details updated successfully', user });
+  } catch (err) {
+    console.error("Error updating card details:", err);
+    res.status(500).json({ message: 'Failed to update card details' });
+  }
 });
 
 // Serve static files (uploaded images)

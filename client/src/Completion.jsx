@@ -1,5 +1,5 @@
-import axios from 'axios';
-import Cookies from 'js-cookie'; // Import js-cookie to access cookies
+import axios from "axios";
+import Cookies from "js-cookie"; // Import js-cookie to access cookies
 import React, { useState } from "react";
 
 function Completion() {
@@ -12,19 +12,40 @@ function Completion() {
   const [contactNumber, setContactNumber] = useState("");
   const [skills, setSkills] = useState([]);
   const [preferredJobType, setPreferredJobType] = useState(""); // New state for Preferred Job Type
-  const [errors, setErrors] = useState({ dob: "", location: "", companyName: "", contactNumber: "", skills: "", preferredJobType: "" });
+  const [errors, setErrors] = useState({
+    dob: "",
+    location: "",
+    companyName: "",
+    contactNumber: "",
+    skills: "",
+    preferredJobType: "",
+  });
 
   const geoapifyApiKey = "21e751dc4d7a4a12a21c8501d6c70d8f";
 
   const skillOptions = [
-    "Microsoft Office", "Excel", "Accounting", "JavaScript", "React", 
-    "Data Analysis", "Project Management", "Python", "Java", 
-    "C++", "Machine Learning", "Marketing", "Sales", "Communication",
-    "Team Leadership", "Problem Solving", "Time Management", "SQL",
-    "Cybersecurity", "Network Administration"
+    "Microsoft Office",
+    "Excel",
+    "Accounting",
+    "JavaScript",
+    "React",
+    "Data Analysis",
+    "Project Management",
+    "Python",
+    "Java",
+    "C++",
+    "Machine Learning",
+    "Marketing",
+    "Sales",
+    "Communication",
+    "Team Leadership",
+    "Problem Solving",
+    "Time Management",
+    "SQL",
+    "Cybersecurity",
+    "Network Administration",
   ];
 
-  // Retrieve the username from cookies
   const username = Cookies.get("username");
 
   const handleLocationChange = (e) => {
@@ -32,7 +53,11 @@ function Completion() {
 
     if (e.target.value.length > 3) {
       axios
-        .get(`https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(e.target.value)}&apiKey=${geoapifyApiKey}`)
+        .get(
+          `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(
+            e.target.value
+          )}&apiKey=${geoapifyApiKey}`
+        )
         .then((response) => {
           setLocationResults(response.data.features);
         })
@@ -69,8 +94,13 @@ function Completion() {
 
     if (!dob) formErrors.dob = "Date of Birth is required";
     if (!selectedLocation) formErrors.location = "Location is required";
-    if (role === "job_seeker" && !skills.length) formErrors.skills = "Please select at least one skill";
-    if (role === "job_seeker" && !preferredJobType) formErrors.preferredJobType = "Preferred Job Type is required"; // Validation for Preferred Job Type
+    if (role === "job_seeker" && !skills.length)
+      formErrors.skills = "Please select at least one skill";
+    if (
+      role === "job_seeker" &&
+      !preferredJobType
+    )
+      formErrors.preferredJobType = "Preferred Job Type is required";
 
     setErrors(formErrors);
     console.log("First step errors:", formErrors);
@@ -80,8 +110,10 @@ function Completion() {
   const validateSecondStep = () => {
     let formErrors = {};
 
-    if (role === "employer" && !companyName) formErrors.companyName = "Company Name is required";
-    if (role === "employer" && !contactNumber) formErrors.contactNumber = "Contact Number is required";
+    if (role === "employer" && !companyName)
+      formErrors.companyName = "Company Name is required";
+    if (role === "employer" && !contactNumber)
+      formErrors.contactNumber = "Contact Number is required";
 
     setErrors(formErrors);
     console.log("Second step errors:", formErrors);
@@ -90,31 +122,33 @@ function Completion() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (!validateFirstStep() || !validateSecondStep()) return; // Validate both steps
-  
+
+    if (!validateFirstStep() || !validateSecondStep()) return;
+
     const profileData = {
-      username,  // Add the username from cookies to the profile data
+      username,
       dob,
       location: selectedLocation,
       role,
-      preferredJobType, // Send the preferred job type
+      preferredJobType,
       companyName: role === "employer" ? companyName : undefined,
       contactNumber: role === "employer" ? contactNumber : undefined,
       skills: role === "job_seeker" ? skills : undefined,
     };
-    
+
     console.log("Selected role:", role);
 
-  
     try {
-      // Send the data to the backend to update the user's profile
-      const response = await axios.post("http://localhost:3001/complete-profile", profileData, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // Assuming JWT token for auth
+      const response = await axios.post(
+        "http://localhost:3001/complete-profile",
+        profileData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
         }
-      });
-  
+      );
+
       console.log(response.data);
       window.location.href = "/home";
     } catch (error) {
@@ -123,34 +157,69 @@ function Completion() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="bg-white p-4 rounded w-50">
-        <h2>Complete Your Profile</h2>
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(to right, #007BFF, #FFA500)",
+        fontFamily: "'Nunito Sans', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "12px",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+          padding: "30px",
+          maxWidth: "600px",
+          width: "90%",
+        }}
+      >
+        <h2
+          style={{
+            background:
+              "linear-gradient(to right, #007BFF, #FFA500)",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+            textAlign: "center",
+          }}
+        >
+          Complete Your Profile
+        </h2>
         <form onSubmit={handleSubmit}>
+          {/* Date of Birth */}
           <div className="mb-3">
-            <label><strong>Date of Birth</strong></label>
+            <label>Date of Birth</label>
             <input
               type="date"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
-              className={`form-control ${errors.dob ? 'is-invalid' : ''}`}
+              className={`form-control ${
+                errors.dob ? "is-invalid" : ""
+              }`}
               max="2020-12-31"
             />
             {errors.dob && <div className="text-danger">{errors.dob}</div>}
           </div>
 
+          {/* Location */}
           <div className="mb-3">
-            <label><strong>Location</strong></label>
+            <label>Location</label>
             <div className="position-relative">
               <input
                 type="text"
                 value={locationQuery}
                 onChange={handleLocationChange}
-                className={`form-control ${errors.location ? 'is-invalid' : ''}`}
-                placeholder="Enter location or address"
+                className={`form-control ${
+                  errors.location ? "is-invalid" : ""
+                }`}
+                placeholder="Enter location"
               />
               {locationResults.length > 0 && (
-                <ul className="list-group position-absolute w-100 mt-1" style={{ zIndex: 100 }}>
+                <ul
+                  className="list-group position-absolute w-100 mt-1"
+                  style={{ zIndex: 100 }}
+                >
                   {locationResults.map((location, index) => (
                     <li
                       key={index}
@@ -163,11 +232,14 @@ function Completion() {
                 </ul>
               )}
             </div>
-            {errors.location && <div className="text-danger">{errors.location}</div>}
+            {errors.location && (
+              <div className="text-danger">{errors.location}</div>
+            )}
           </div>
 
+          {/* Role */}
           <div className="mb-3">
-            <label><strong>Role</strong></label>
+            <label>Role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -178,39 +250,50 @@ function Completion() {
             </select>
           </div>
 
+          {/* Conditional Fields */}
           {role === "job_seeker" && (
             <>
               <div className="mb-3">
-                <label><strong>Preferred Job Type</strong></label>
+                <label>Preferred Job Type</label>
                 <select
                   value={preferredJobType}
                   onChange={(e) => setPreferredJobType(e.target.value)}
-                  className={`form-control ${errors.preferredJobType ? 'is-invalid' : ''}`}
+                  className={`form-control ${
+                    errors.preferredJobType ? "is-invalid" : ""
+                  }`}
                 >
-                  <option value="">Select Preferred Job Type</option>
+                  <option value="">Select Job Type</option>
                   <option value="full-time">Full-time</option>
                   <option value="part-time">Part-time</option>
                   <option value="remote">Remote</option>
                   <option value="mini-job">Mini-job</option>
                 </select>
-                {errors.preferredJobType && <div className="text-danger">{errors.preferredJobType}</div>}
+                {errors.preferredJobType && (
+                  <div className="text-danger">{errors.preferredJobType}</div>
+                )}
               </div>
 
               <div className="mb-3">
-                <label><strong>Skills</strong></label>
+                <label>Skills</label>
                 <div className="d-flex flex-wrap">
                   {skillOptions.map((skill) => (
                     <button
                       key={skill}
                       type="button"
-                      className={`btn btn-sm m-1 ${skills.includes(skill) ? 'btn-primary' : 'btn-outline-primary'}`}
+                      className={`btn btn-sm m-1 ${
+                        skills.includes(skill)
+                          ? "btn-primary"
+                          : "btn-outline-primary"
+                      }`}
                       onClick={() => handleSkillSelect(skill)}
                     >
                       {skill}
                     </button>
                   ))}
                 </div>
-                {errors.skills && <div className="text-danger">{errors.skills}</div>}
+                {errors.skills && (
+                  <div className="text-danger">{errors.skills}</div>
+                )}
               </div>
             </>
           )}
@@ -218,30 +301,47 @@ function Completion() {
           {role === "employer" && (
             <>
               <div className="mb-3">
-                <label><strong>Company Name</strong></label>
+                <label>Company Name</label>
                 <input
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  className={`form-control ${errors.companyName ? 'is-invalid' : ''}`}
+                  className={`form-control ${
+                    errors.companyName ? "is-invalid" : ""
+                  }`}
                 />
-                {errors.companyName && <div className="text-danger">{errors.companyName}</div>}
+                {errors.companyName && (
+                  <div className="text-danger">{errors.companyName}</div>
+                )}
               </div>
 
               <div className="mb-3">
-                <label><strong>Contact Number</strong></label>
+                <label>Contact Number</label>
                 <input
                   type="text"
                   value={contactNumber}
                   onChange={handleContactNumberChange}
-                  className={`form-control ${errors.contactNumber ? 'is-invalid' : ''}`}
+                  className={`form-control ${
+                    errors.contactNumber ? "is-invalid" : ""
+                  }`}
                 />
-                {errors.contactNumber && <div className="text-danger">{errors.contactNumber}</div>}
+                {errors.contactNumber && (
+                  <div className="text-danger">{errors.contactNumber}</div>
+                )}
               </div>
             </>
           )}
 
-          <button type="submit" className="btn btn-success w-100">
+          <button
+            type="submit"
+            className="btn btn-success w-100"
+            style={{
+              borderRadius: "8px",
+              background:
+                "linear-gradient(to right, #007BFF, #FFA500)",
+              color: "#ffffff",
+            }}
+          >
             Complete Profile
           </button>
         </form>

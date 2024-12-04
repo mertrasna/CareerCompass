@@ -1,5 +1,5 @@
-import Cookies from "js-cookie";
 import axios from "axios";
+import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
@@ -137,114 +137,248 @@ function Payment() {
   };
 
   return (
-    <PaymentContainer>
-      <h1>Payment Simulation</h1>
-      {isPremium && (
-        <PremiumMessage>
-          You are already a premium subscriber! Thank you for your support.
-        </PremiumMessage>
-      )}
-      <form onSubmit={handleSubmit}>
-        <InputGroup>
-          <label>Payment Method</label>
-          <PaymentOption>
-            <label>
-              <input
-                type="radio"
-                value="card"
-                checked={paymentMethod === "card"}
-                onChange={() => setPaymentMethod("card")}
-              />
-              Credit Card
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="wallet"
-                checked={paymentMethod === "wallet"}
-                onChange={() => setPaymentMethod("wallet")}
-              />
-              Wallet
-            </label>
-          </PaymentOption>
-        </InputGroup>
+    <PageContainer>
+      <Title>Payment Page</Title>
+      <PaymentContainer>
+        {/* Left Section - Payment Summary */}
+        <PaymentDetailsSection>
+          <SectionTitle>Payment Summary</SectionTitle>
+          <PaymentDetail>
+            <Label>Amount:</Label>
+            <Value>£50.00</Value>
+          </PaymentDetail>
+          <PaymentDetail>
+            <Label>Tax:</Label>
+            <Value>£5.00</Value>
+          </PaymentDetail>
+          <PaymentDetail>
+            <Label>Total:</Label>
+            <TotalValue>£55.00</TotalValue>
+          </PaymentDetail>
+        </PaymentDetailsSection>
 
-        {paymentMethod === "card" && (
-          <>
-            <InputGroup>
-              <label>Card Number</label>
-              <input
-                type="text"
-                value={cardNumber}
-                onChange={handleCardNumberChange}
-                placeholder="1234 5678 9012 3456"
-                maxLength="20"
-              />
-              {cardType && <CardType>{cardType}</CardType>}
-            </InputGroup>
-            <InputGroup>
-              <label>Expiry Date</label>
-              <input
-                type="text"
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                placeholder="MM/YY"
-                maxLength="5"
-              />
-            </InputGroup>
-            <InputGroup>
-              <label>CVV</label>
-              <input
-                type="password"
-                value={cvv}
-                onChange={(e) => setCvv(e.target.value)}
-                placeholder="123"
-                maxLength="3"
-              />
-            </InputGroup>
-          </>
-        )}
+        {/* Right Section - Payment Form */}
+        <CardDetailsSection>
+          {isPremium && (
+            <PremiumMessage>
+              You are already a premium subscriber! Thank you for your support.
+            </PremiumMessage>
+          )}
+          <form onSubmit={handleSubmit}>
+            <InputWrapper>
+              <Label>Payment Method</Label>
+              <PaymentOption>
+                <label>
+                  <input
+                    type="radio"
+                    value="card"
+                    checked={paymentMethod === "card"}
+                    onChange={() => setPaymentMethod("card")}
+                  />
+                  Credit Card
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    value="wallet"
+                    checked={paymentMethod === "wallet"}
+                    onChange={() => setPaymentMethod("wallet")}
+                  />
+                  Wallet
+                </label>
+              </PaymentOption>
+            </InputWrapper>
 
-        {paymentMethod === "wallet" && (
-          <InputGroup>
-            <label>Wallet Balance: ${walletBalance}</label>
-            <p>Payment amount: $50</p>
-          </InputGroup>
-        )}
+            {paymentMethod === "card" && (
+              <>
+                <InputWrapper>
+                  <Label>Card Number</Label>
+                  <Input
+                    type="text"
+                    value={cardNumber}
+                    onChange={handleCardNumberChange}
+                    placeholder="1234 5678 9012 3456"
+                    maxLength="20"
+                  />
+                  {cardType && <CardType>{cardType}</CardType>}
+                </InputWrapper>
+                <InputWrapper>
+                  <TwoColumn>
+                    <div>
+                      <Label>Expiry Date</Label>
+                      <Input
+                        type="text"
+                        value={expiryDate}
+                        onChange={(e) => setExpiryDate(e.target.value)}
+                        placeholder="MM/YY"
+                        maxLength="5"
+                      />
+                    </div>
+                    <div>
+                      <Label>CVV</Label>
+                      <Input
+                        type="password"
+                        value={cvv}
+                        onChange={(e) => setCvv(e.target.value)}
+                        placeholder="123"
+                        maxLength="3"
+                      />
+                    </div>
+                  </TwoColumn>
+                </InputWrapper>
+              </>
+            )}
 
-        <SubmitButton type="submit" disabled={isPremium}>
-          {isPremium ? "Already Subscribed" : "Pay Now"}
-        </SubmitButton>
-      </form>
+            {paymentMethod === "wallet" && (
+              <InputWrapper>
+                <Label>Wallet Balance</Label>
+                <Value>${walletBalance}</Value>
+                <p>Payment amount: $50</p>
+              </InputWrapper>
+            )}
 
-      {paymentStatus && <PaymentStatus>{paymentStatus}</PaymentStatus>}
-    </PaymentContainer>
+            <SubmitButton type="submit" disabled={isPremium}>
+              {isPremium ? "Already Subscribed" : "Pay Now"}
+            </SubmitButton>
+          </form>
+        </CardDetailsSection>
+      </PaymentContainer>
+
+      {paymentStatus && <StatusMessage>{paymentStatus}</StatusMessage>}
+    </PageContainer>
   );
 }
 
 // Styled Components
-const PaymentContainer = styled.div`
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+const PageContainer = styled.div`
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(to right, #f9d976, #f39f86);
+  min-height: 100vh;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
-const InputGroup = styled.div`
+const Title = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0033cc;
+  margin-bottom: 20px;
+`;
+
+const PaymentContainer = styled.div`
+  display: flex;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 900px;
+  width: 100%;
+`;
+
+const PaymentDetailsSection = styled.div`
+  flex: 1;
+  padding: 30px;
+  background-color: #f8f8f8;
+  border-right: 2px solid #e5e5e5;
+`;
+
+const CardDetailsSection = styled.div`
+  flex: 1;
+  padding: 30px;
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+`;
+
+const PaymentDetail = styled.div`
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 15px;
 `;
 
-const CardType = styled.div`
-  margin-top: 10px;
+const Label = styled.label`
+  font-weight: 500;
+  font-size: 1rem;
+  color: #555;
+`;
+
+const Value = styled.span`
+  font-weight: 500;
+  font-size: 1rem;
   color: #333;
+`;
+
+const TotalValue = styled(Value)`
+  font-size: 1.2rem;
   font-weight: bold;
+  color: #0033cc;
 `;
 
 const PaymentOption = styled.div`
   display: flex;
-  justify-content: space-between;
+  gap: 20px;
+  justify-content: flex-start;
+  label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #555;
+  }
+`;
+
+const CardType = styled.div`
+  margin-top: 10px;
+  font-weight: bold;
+  color: #0033cc;
+`;
+
+const InputWrapper = styled.div`
+  margin-bottom: 20px;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #333;
+  outline: none;
+  &:focus {
+    border-color: #0033cc;
+  }
+`;
+
+const TwoColumn = styled.div`
+  display: flex;
+  gap: 15px;
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  background-color: #0033cc;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #002499;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
 `;
 
 const PremiumMessage = styled.p`
@@ -253,26 +387,11 @@ const PremiumMessage = styled.p`
   margin-bottom: 20px;
 `;
 
-const SubmitButton = styled.button`
-  padding: 10px;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  &:hover {
-    background-color: #218838;
-  }
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const PaymentStatus = styled.p`
-  margin-top: 15px;
-  font-weight: bold;
-  color: #333;
+const StatusMessage = styled.p`
+  margin-top: 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #0033cc;
 `;
 
 export default Payment;

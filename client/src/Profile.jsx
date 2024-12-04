@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Cookies from 'js-cookie';
+import axios from "axios";
+import Cookies from "js-cookie";
+import React, { useEffect, useState } from "react";
+import { FiArrowLeft } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
   const navigate = useNavigate();
@@ -10,26 +11,51 @@ function Profile() {
   const [error, setError] = useState(null);
   const [newProfilePic, setNewProfilePic] = useState(null);
   const [newDocument, setNewDocument] = useState(null);
-  const [profilePic, setProfilePic] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [profilePic, setProfilePic] = useState("");
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cardHolderName: "",
+    cardType: "",
+    cvv: "",
+  });
+
+  const resetCardDetails = () => {
+    setCardDetails({
+      cardNumber: "",
+      expiryDate: "",
+      cardHolderName: "",
+      cardType: "",
+      cvv: "",
+    });
+  };
+
+  const defaultProfilePic = "http://localhost:3001/uploads/pfp.png";
 
   useEffect(() => {
-    const username = Cookies.get('username');
+    const username = Cookies.get("username");
 
     if (!username) {
-      setError('Username not found in cookies');
+      setError("Username not found in cookies");
       setLoading(false);
       return;
     }
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.post('http://localhost:3001/userdata', { username });
+        const response = await axios.post("http://localhost:3001/userdata", {
+          username,
+        });
         setUser(response.data.user);
-        setProfilePic(response.data.user.pfp || 'default-profile-pic.jpg');
+        setProfilePic(response.data.user.pfp || defaultProfilePic);
         setLoading(false);
+        if (response.data.user.cardDetails) {
+            setCardDetails(response.data.user.cardDetails);
+          }
       } catch (err) {
-        setError('Error fetching user data');
+        setError("Error fetching user data");
         setLoading(false);
       }
     };
@@ -37,51 +63,76 @@ function Profile() {
     fetchUserData();
   }, []);
 
+  const handleCardDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setCardDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const updateCardDetails = async (e) => {
+    e.preventDefault();
+    console.log(cardDetails); // Check cardDetails before sending
+    const username = Cookies.get("username");
+  
+    try {
+      const response = await axios.post("http://localhost:3001/updateCardDetails", {
+        username,
+        cardDetails,
+      });
+      setUser(response.data.user);
+      setError(null);
+      alert('Card details updated successfully');
+    } catch (err) {
+      setError("Failed to update card details");
+      console.error(err);
+    }
+  };
+  
+
   const updateProfilePicture = async () => {
     if (!newProfilePic) {
-      setError('No file selected for profile picture');
+      setError("No file selected for profile picture");
       return;
     }
 
     const formData = new FormData();
-    formData.append('profilePic', newProfilePic);
-    formData.append('username', Cookies.get('username'));
+    formData.append("profilePic", newProfilePic);
+    formData.append("username", Cookies.get("username"));
 
     try {
-      const response = await axios.post('http://localhost:3001/updateProfilePic', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      setProfilePic(response.data.profilePicUrl || 'default-profile-pic.jpg');
-      setIsModalOpen(false);
+      const response = await axios.post(
+        "http://localhost:3001/updateProfilePic",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      setProfilePic(response.data.profilePicUrl || defaultProfilePic);
+      setIsProfileModalOpen(false);
     } catch (err) {
-      console.error('Error uploading profile picture:', err);
-      setError('Failed to upload profile picture');
+      console.error("Error uploading profile picture:", err);
+      setError("Failed to upload profile picture");
     }
   };
 
   const uploadDocument = async () => {
     if (!newDocument) {
-      setError('No document selected for upload');
+      setError("No document selected for upload");
       return;
     }
 
     const formData = new FormData();
-    formData.append('document', newDocument);
-    formData.append('username', Cookies.get('username'));
+    formData.append("document", newDocument);
+    formData.append("username", Cookies.get("username"));
 
     try {
-      const response = await axios.post('http://localhost:3001/uploadDocument', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await axios.post("http://localhost:3001/uploadDocument", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      console.log('Document uploaded successfully:', response.data);
-      setIsModalOpen(false);
+      console.log("Document uploaded successfully:", response.data);
+      setIsVerifyModalOpen(false);
     } catch (err) {
-      console.error('Error uploading document:', err);
-      setError('Failed to upload document');
+      console.error("Error uploading document:", err);
+      setError("Failed to upload document");
     }
   };
 
@@ -97,13 +148,15 @@ function Profile() {
     }
   };
 
-  const openModal = () => {
-    setIsModalOpen(true);
+  const openProfileModal = () => setIsProfileModalOpen(true);
+  const closeProfileModal = () => {
+    setIsProfileModalOpen(false);
+    setNewProfilePic(null);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setNewProfilePic(null);
+  const openVerifyModal = () => setIsVerifyModalOpen(true);
+  const closeVerifyModal = () => {
+    setIsVerifyModalOpen(false);
     setNewDocument(null);
   };
 
@@ -117,73 +170,96 @@ function Profile() {
     if (user.email) completedFields++;
     if (user.location) completedFields++;
     if (user.subscriptionType) completedFields++;
-    if (user.skills && user.skills.length > 0) completedFields++;
+    if (user.skills?.length) completedFields++;
     if (user.preferredJobType) completedFields++;
     if (user.personalityType) completedFields++;
 
     return Math.round((completedFields / 9) * 100);
   };
 
-  if (loading) return <div style={styles.loading}>Loading...</div>;
-  if (error) return <div style={styles.error}>{error}</div>;
-
   const profileCompletion = calculateProfileCompletion();
 
+  if (loading)
+    return <div style={styles.loading}>Loading...</div>;
+
+  if (error)
+    return <div style={styles.error}>{error}</div>;
+
   return (
-    <div style={styles.profileContainer}>
-      <div style={styles.header}>
-        <h1>{user.firstName} {user.lastName}'s Career Compass Profile</h1>
-        <button onClick={() => navigate('/home')} style={styles.backButton}>Back to Home</button>
-      </div>
+    <div style={styles.container}>
+      <button onClick={() => navigate("/home")} style={styles.backButton}>
+        <FiArrowLeft size={24} />
+      </button>
+      <h1 style={styles.subHeading}>
+        {user.firstName} {user.lastName}'s Profile
+      </h1>
 
       <div style={styles.profileCard}>
         <div style={styles.profileImage}>
           <img
             src={profilePic}
             alt="Profile"
+            onError={() => setProfilePic(defaultProfilePic)}
             style={styles.profilePic}
           />
-          <button onClick={openModal} style={styles.uploadButton}>
-            Upload New Profile Picture
+          <button onClick={openProfileModal} style={styles.uploadButton}>
+            Upload New
           </button>
         </div>
         <div style={styles.profileDetails}>
-          <p><strong>Username:</strong> {user.username}</p>
-          <p><strong>Location:</strong> {user.location}</p>
-          <p><strong>Subscription Type:</strong> {user.subscriptionType}</p>
-          <p><strong>Skills:</strong> {user.skills && user.skills.join(', ')}</p>
-          <p><strong>Preferred Job Type:</strong> {user.preferredJobType}</p>
-          <p><strong>Personality Type:</strong> {user.personalityType}</p>
-          <button onClick={() => navigate('/editprofile')} style={styles.editProfileButton}>
+          <p>
+            <strong>Username:</strong> {user.username}
+          </p>
+          <hr style={styles.divider} />
+          <p>
+            <strong>Location:</strong> {user.location}
+          </p>
+          <hr style={styles.divider} />
+          <p>
+            <strong>Subscription Type:</strong> {user.subscriptionType}
+          </p>
+          <hr style={styles.divider} />
+          <p>
+            <strong>Skills:</strong> {user.skills?.join(", ") || "N/A"}
+          </p>
+          <hr style={styles.divider} />
+          <p>
+            <strong>Preferred Job Type:</strong> {user.preferredJobType || "N/A"}
+          </p>
+          <button
+            onClick={() => navigate("/editprofile")}
+            style={styles.editButton}
+          >
             Edit Profile
           </button>
         </div>
       </div>
 
       <div style={styles.profileCompletion}>
-        <h2>Profile Completion</h2>
+        <h2 style={styles.subHeading}>Profile Completion</h2>
         <div style={styles.completionBar}>
-          <div style={{ ...styles.completionProgress, width: `${profileCompletion}%` }}></div>
+          <div
+            style={{
+              ...styles.completionProgress,
+              width: `${profileCompletion}%`,
+            }}
+          ></div>
         </div>
         <p>{profileCompletion}% Complete</p>
         {profileCompletion === 100 && (
-          <div style={styles.verificationSection}>
-            <h2>Verify Yourself</h2>
-            <p>Upload a document to verify your identity</p>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx,.txt,.jpg,.png"
-              onChange={handleDocumentChange}
-              style={styles.fileInput}
-            />
-            <button onClick={uploadDocument} style={styles.confirmButton}>
-              Upload Document
+          <>
+            <h3 style={styles.subHeading}>VERIFY YOURSELF</h3>
+            <p style={styles.description}>
+              Upload a document to verify your identity
+            </p>
+            <button onClick={openVerifyModal} style={styles.verifyButton}>
+              Verify Yourself
             </button>
-          </div>
+          </>
         )}
       </div>
 
-      {isModalOpen && (
+      {isProfileModalOpen && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
             <h2>Choose a New Profile Picture</h2>
@@ -194,160 +270,323 @@ function Profile() {
               style={styles.fileInput}
             />
             <div style={styles.modalButtons}>
-              <button onClick={closeModal} style={styles.cancelButton}>Cancel</button>
+              <button onClick={closeProfileModal} style={styles.cancelButton}>
+                Cancel
+              </button>
               <button onClick={updateProfilePicture} style={styles.confirmButton}>
-                Confirm Picture Upload
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {isVerifyModalOpen && (
+        <div style={styles.modal}>
+          <div style={styles.modalContent}>
+            <h2>Verify Yourself</h2>
+            <p>Upload a document to verify your identity</p>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.txt,.jpg,.png"
+              onChange={handleDocumentChange}
+              style={styles.fileInput}
+            />
+            <div style={styles.modalButtons}>
+              <button onClick={closeVerifyModal} style={styles.cancelButton}>
+                Cancel
+              </button>
+              <button onClick={uploadDocument} style={styles.confirmButton}>
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+<div style={styles.cardDetailsContainer}>
+  <h2 style={styles.subHeading}>Card Details</h2>
+  <form onSubmit={updateCardDetails} style={styles.cardForm}>
+    <label>
+      Card Number:
+      <input
+        type="text"
+        name="cardNumber"
+        value={cardDetails.cardNumber || ""}  
+        onChange={handleCardDetailsChange}
+        required
+        style={styles.inputField}
+      />
+    </label>
+    <br />
+    <label>
+      Expiry Date:
+      <input
+        type="text"
+        name="expiryDate"
+        value={cardDetails.expiryDate || ""}  
+        onChange={handleCardDetailsChange}
+        required
+        style={styles.inputField}
+      />
+    </label>
+    <br />
+    <label>
+      Cardholder Name:
+      <input
+        type="text"
+        name="cardHolderName"
+        value={cardDetails.cardHolderName || ""}  
+        onChange={handleCardDetailsChange}
+        required
+        style={styles.inputField}
+      />
+    </label>
+    <br />
+    <label>
+      Card Type:
+      <select
+        name="cardType"
+        value={cardDetails.cardType || "Visa"}  
+        onChange={handleCardDetailsChange}
+        required
+        style={styles.inputField}
+      >
+        <option value="Visa">Visa</option>
+        <option value="MasterCard">MasterCard</option>
+        <option value="American Express">American Express</option>
+        <option value="Discover">Discover</option>
+      </select>
+    </label>
+    <br />
+    <label>
+      CVV:
+      <input
+        type="text"
+        name="cvv"
+        value={cardDetails.cvv || ""}  
+        onChange={handleCardDetailsChange}
+        required
+        style={styles.inputField}
+      />
+    </label>
+    <br />
+    <button type="submit" style={styles.saveButton}>
+      Save Card Details
+    </button>
+    <button
+      type="button"
+      onClick={resetCardDetails}
+      style={styles.resetButton}
+    >
+      Reset Card Details
+    </button>
+  </form>
+</div>
+
     </div>
   );
 }
 
 const styles = {
-  profileContainer: {
-    fontFamily: 'Arial, sans-serif',
-    padding: '20px',
-    background: 'linear-gradient(135deg, #2a2a72, #009ffd)',
-    color: 'white',
-    borderRadius: '8px',
-    maxWidth: '800px',
-    margin: 'auto',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  container: {
+    fontFamily: "'Nunito', sans-serif",
+    background: "linear-gradient(to right, #007BFF, #FFA500)",
+    color: "#fff",
+    minHeight: "100vh",
+    padding: "20px",
+    position: "relative",
   },
   backButton: {
-    position: 'absolute', // Position it absolutely
-    top: '10px', // Place it at the top
-    left: '5px', // Place it to the left
-    backgroundColor: '#4caf50',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    background: "none",
+    border: "none",
+    color: "#fff",
+    cursor: "pointer",
   },
   header: {
-    textAlign: 'center',
-    marginBottom: '20px',
+    fontSize: "24px",
+    color: "#fff",
+    fontWeight: "bold",
+    marginBottom: "30px",
+    textAlign: "center",
   },
   profileCard: {
-    background: 'rgba(255, 255, 255, 0.1)',
-    padding: '20px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    background: "rgba(255, 255, 255, 0.2)",
+    borderRadius: "12px",
+    padding: "20px",
+    maxWidth: "600px",
+    margin: "0 auto",
+    display: "flex",
+    alignItems: "center",
   },
   profileImage: {
-    flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
+    marginRight: "20px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   profilePic: {
-    width: '150px',
-    height: '150px',
-    borderRadius: '50%',
-    objectFit: 'cover',
-    border: '3px solid white',
+    width: "120px",
+    height: "120px",
+    borderRadius: "50%",
+    border: "4px solid #fff",
+    objectFit: "cover",
   },
   uploadButton: {
-    backgroundColor: '#4caf50',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    marginTop: '10px',
+    background: "transparent",
+    color: "#FFA500",
+    padding: "8px 15px",
+    border: "2px solid #FFA500",
+    borderRadius: "6px",
+    cursor: "pointer",
+    marginTop: "10px",
+    fontSize: "14px",
   },
   profileDetails: {
-    flex: 2,
-    paddingLeft: '20px',
+    flex: 1,
+    color: "#fff",
+    fontSize: "16px",
+    display: "flex",
+    flexDirection: "column",
+    textAlign: "center",
   },
-  editProfileButton: {
-    marginTop: '20px',
-    padding: '10px 20px',
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
+  editButton: {
+    background: "#007BFF",
+    color: "#fff",
+    padding: "5px 10px",
+    fontSize: "12px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    marginTop: "8px",
+    width: "200px",
+    textAlign: "center",
+    margin: "8px auto",
+    display: "block",
+  },
+  divider: {
+    border: "0",
+    height: "1px",
+    background: "rgba(255, 255, 255, 0.3)",
+    width: "80%",
+    margin: "10px auto",
   },
   profileCompletion: {
-    marginBottom: '20px',
+    background: "rgba(255, 255, 255, 0.2)",
+    borderRadius: "12px",
+    padding: "20px",
+    maxWidth: "600px",
+    margin: "20px auto",
+    textAlign: "center",
   },
   completionBar: {
-    background: '#e0e0e0',
-    borderRadius: '25px',
-    height: '20px',
-    marginTop: '10px',
+    background: "#e0e0e0",
+    borderRadius: "25px",
+    height: "20px",
+    marginTop: "10px",
   },
   completionProgress: {
-    background: '#4caf50',
-    borderRadius: '25px',
-    height: '100%',
-  },
-  loading: {
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: '20px',
-    backgroundColor: '#009ffd',
-    padding: '20px',
-    borderRadius: '8px',
-  },
-  error: {
-    textAlign: 'center',
-    color: 'red',
-    fontSize: '20px',
-    backgroundColor: '#ffd9d9',
-    padding: '20px',
-    borderRadius: '8px',
+    background: "#4CAF50",
+    height: "100%",
   },
   modal: {
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
-    background: 'rgba(0, 0, 0, 0.8)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    height: "100%",
+    background: "rgba(0, 0, 0, 0.7)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    background: 'white',
-    padding: '20px',
-    borderRadius: '8px',
-    width: '300px',
-    textAlign: 'center',
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "12px",
+    textAlign: "center",
   },
   modalButtons: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '20px',
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "20px",
   },
   cancelButton: {
-    backgroundColor: 'red',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
+    background: "red",
+    color: "#fff",
+    padding: "10px 20px",
+    borderRadius: "6px",
+    cursor: "pointer",
   },
   confirmButton: {
-    backgroundColor: '#4caf50',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
+    background: "#4CAF50",
+    color: "#fff",
+    padding: "10px 20px",
+    borderRadius: "6px",
+    cursor: "pointer",
   },
-  fileInput: {
-    marginTop: '10px',
+  loading: {
+    textAlign: "center",
+    color: "#fff",
+    fontSize: "20px",
+    padding: "20px",
   },
+  verifyButton: {
+    background: "#FFA500",
+    color: "#fff",
+    padding: "10px 20px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  error: {
+    textAlign: "center",
+    color: "red",
+    fontSize: "20px",
+    padding: "20px",
+  },
+  subHeading: {
+    fontSize: "20px",
+    fontWeight: "bold",
+    marginTop: "0px",
+    color: "#fff",
+    textAlign: "center", // Align text to the center
+    textTransform: "uppercase", // Transform text to uppercas
+    textDecoration: "underline", // Adds an underline directly beneath the text
+  textDecorationThickness: "1px", // Adjust the thickness
+  textUnderlineOffset: "6px", // Space between text and underline
+  },
+  description: {
+    fontSize: "14px",
+    marginTop: "10px",
+    marginBottom: "20px",
+    color: "#fff",
+  },
+  // Add this to styles:
+cardDetailsContainer: {
+  background: "rgba(255, 255, 255, 0.2)",
+  borderRadius: "12px",
+  padding: "20px",
+  maxWidth: "600px",
+  margin: "20px auto",
+  textAlign: "center",
+},
+inputField: {
+  background: "rgba(255, 255, 255, 0.4)",
+  border: "1px solid #fff",
+  borderRadius: "6px",
+  padding: "10px",
+  marginBottom: "10px",
+  width: "100%",
+  color: "#fff",
+},
+cardForm: {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+},
 };
 
 export default Profile;

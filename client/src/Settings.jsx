@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import notificationManager from "./NotificationManager";
 
+const fontSizeMap = {
+  Small: "14px",
+  Medium: "18px",
+  Large: "24px",
+};
+
 const Settings = () => {
   const navigate = useNavigate();
 
@@ -10,14 +16,18 @@ const Settings = () => {
   const [language, setLanguage] = useState(() => Cookies.get("language") || "English");
   const [fontSize, setFontSize] = useState(() => Cookies.get("fontSize") || "Medium");
 
-  // Sync state with styles
+  // Apply global font size
   useEffect(() => {
-    document.body.style.fontSize = fontSize === "Small" ? "14px" : fontSize === "Large" ? "18px" : "16px";
-    document.body.style.backgroundColor = darkMode ? "#121212" : "#ffffff";
-    document.body.style.color = darkMode ? "#ffffff" : "#000000";
-  }, [darkMode, fontSize]);
+    document.body.style.fontSize = fontSizeMap[fontSize];
+  }, [fontSize]);
 
-  // Handle appearance settings
+  // Apply dark mode styles dynamically
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--table-bg-color", darkMode ? "#121212" : "#ffffff");
+    root.style.setProperty("--table-text-color", darkMode ? "#ffffff" : "#000000");
+  }, [darkMode]);
+
   const handleDarkModeToggle = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
@@ -48,7 +58,6 @@ const Settings = () => {
     });
   };
 
-  // Logout handler
   const handleLogOut = () => {
     Cookies.remove("username");
     notificationManager.addNotification({
@@ -58,10 +67,8 @@ const Settings = () => {
     navigate("/login");
   };
 
-  // Delete account handler
   const handleDeleteAccount = async () => {
-    const confirmDelete = window.confirm("Are you sure you want to delete your account?");
-    if (confirmDelete) {
+    if (window.confirm("Are you sure you want to delete your account?")) {
       const username = Cookies.get("username");
       try {
         const response = await fetch("http://localhost:3001/delete-account", {
@@ -78,7 +85,10 @@ const Settings = () => {
           });
           navigate("/login");
         } else {
-          alert(result.message);
+          notificationManager.addNotification({
+            message: result.message,
+            type: "error",
+          });
         }
       } catch (error) {
         console.error("Error deleting account:", error);
@@ -91,44 +101,141 @@ const Settings = () => {
   };
 
   return (
-    <div className="settings-container">
-      <h1>Settings</h1>
-      <button onClick={() => navigate("/home")} className="back-button">
-        Back to Home
-      </button>
-      <section>
-        <h2>Appearance</h2>
-        <label>
-          Enable Dark Mode
-          <input type="checkbox" checked={darkMode} onChange={handleDarkModeToggle} />
-        </label>
-      </section>
-      <section>
-        <h2>Language</h2>
-        <label>Choose a language:</label>
-        <select value={language} onChange={handleLanguageChange}>
-          <option value="English">English</option>
-          <option value="German">German</option>
-          <option value="Turkish">Turkish</option>
-        </select>
-      </section>
-      <section>
-        <h2>Font Size</h2>
-        <label>Choose font size:</label>
-        <select value={fontSize} onChange={handleFontSizeChange}>
-          <option value="Small">Small</option>
-          <option value="Medium">Medium</option>
-          <option value="Large">Large</option>
-        </select>
-      </section>
-      <button onClick={handleLogOut} className="logout-button">
-        Log Out
-      </button>
-      <button onClick={handleDeleteAccount} className="delete-button">
-        Delete Account
-      </button>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <h1 style={styles.title}>Settings</h1>
+        <button onClick={() => navigate("/home")} style={styles.backButton}>
+          Back to Home
+        </button>
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>Appearance</h2>
+          <div style={styles.switchContainer}>
+            <span style={styles.switchLabel}>Enable Dark Mode</span>
+            <label htmlFor="darkModeToggle" style={styles.switch}>
+              <input
+                id="darkModeToggle"
+                type="checkbox"
+                checked={darkMode}
+                onChange={handleDarkModeToggle}
+                style={styles.switchInput}
+              />
+              <span style={styles.slider}></span>
+            </label>
+          </div>
+        </div>
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>Language</h2>
+          <label htmlFor="languageSelect" style={styles.label}>Choose a language:</label>
+          <select
+            id="languageSelect"
+            value={language}
+            onChange={handleLanguageChange}
+            style={styles.select}
+          >
+            <option value="English">English</option>
+            <option value="German">German</option>
+            <option value="Turkish">Turkish</option>
+          </select>
+        </div>
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>Font Size</h2>
+          <label htmlFor="fontSizeSelect" style={styles.label}>Choose font size:</label>
+          <select
+            id="fontSizeSelect"
+            value={fontSize}
+            onChange={handleFontSizeChange}
+            style={styles.select}
+          >
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+          </select>
+        </div>
+        <button onClick={handleLogOut} style={styles.logoutButton}>
+          Log Out
+        </button>
+        <button onClick={handleDeleteAccount} style={styles.deleteButton}>
+          Delete Account
+        </button>
+      </div>
     </div>
   );
+};
+
+const styles = {
+  page: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #FFA500, #0056b3)", // Fading orange-to-blue gradient
+    fontFamily: "'Poppins', sans-serif", // Modern font
+  },
+  container: {
+    width: "500px",
+    backgroundColor: "var(--table-bg-color)", // Dynamically updated
+    color: "var(--table-text-color)", // Dynamically updated
+    borderRadius: "10px",
+    padding: "20px",
+    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+    textAlign: "center",
+  },
+  title: {
+    fontSize: "2.5rem",
+    marginBottom: "20px",
+  },
+  backButton: {
+    marginBottom: "20px",
+    padding: "10px 20px",
+    backgroundColor: "#4caf50",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  section: {
+    marginBottom: "20px",
+  },
+  sectionTitle: {
+    fontSize: "1.8rem",
+    marginBottom: "10px",
+  },
+  switchContainer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  switchLabel: {
+    fontSize: "1rem",
+  },
+  label: {
+    display: "block",
+    marginBottom: "5px",
+  },
+  select: {
+    width: "100%",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+  },
+  logoutButton: {
+    marginTop: "10px",
+    padding: "10px 20px",
+    backgroundColor: "#4caf50",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  deleteButton: {
+    marginTop: "10px",
+    padding: "10px 20px",
+    backgroundColor: "#e63946",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
 };
 
 export default Settings;
