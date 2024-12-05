@@ -1032,6 +1032,35 @@ app.post('/updateCardDetails', async (req, res) => {
   }
 });
 
+app.get("/download-cv", async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required" });
+  }
+
+  try {
+    const user = await UsersModel.findOne({ username, role: "job_seeker" });
+
+    if (!user || !user.pdfData) {
+      return res.status(404).json({ success: false, message: "User or CV not found" });
+    }
+
+    // Decode Base64 to binary buffer
+    const buffer = Buffer.from(user.pdfData, "base64");
+
+    // Set the appropriate headers to serve the PDF file
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=${user.firstName}_CV.pdf`);
+
+    // Send the binary buffer
+    res.send(buffer);
+  } catch (err) {
+    console.error("Error downloading CV:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Serve static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

@@ -18,7 +18,7 @@ function Payment() {
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/subscription", {
+        const response = await axios.get("http://localhost:3004/subscription", {
           params: { username },
         });
 
@@ -58,7 +58,7 @@ function Payment() {
 
   const updateSubscription = async () => {
     try {
-      const response = await axios.post("http://localhost:3001/update-subscription", {
+      const response = await axios.post("http://localhost:3004/update-subscription", {
         username,
         subscriptionType: "premium",
       });
@@ -93,7 +93,7 @@ function Payment() {
     if (paymentMethod === "wallet") {
       if (walletBalance >= 50) {
         try {
-          const response = await axios.post("http://localhost:3001/wallet-payment", {
+          const response = await axios.post("http://localhost:3004/wallet-payment", {
             username,
             amount: 50,
           });
@@ -116,7 +116,7 @@ function Payment() {
       }
     } else if (paymentMethod === "card") {
       try {
-        const response = await axios.post("http://localhost:3001/payment", {
+        const response = await axios.post("http://localhost:3004/payment", {
           username,
           cardNumber,
           expiryDate,

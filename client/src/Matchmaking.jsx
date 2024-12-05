@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FiArrowLeft } from "react-icons/fi"; // Import the arrow icon
+import { FiArrowLeft } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 function Matchmaking() {
-  const [jobs, setJobs] = useState([]); // List of all jobs
-  const [currentIndex, setCurrentIndex] = useState(0); // Track the current job index
+  const [jobs, setJobs] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState("");
-  const [subscriptionType, setSubscriptionType] = useState("loading"); // Subscription status
-  const [swipesLeft, setSwipesLeft] = useState(5); // Track remaining swipes for basic plan
-  const [direction, setDirection] = useState(0); // Track swipe direction
+  const [subscriptionType, setSubscriptionType] = useState("loading");
+  const [swipesLeft, setSwipesLeft] = useState(5);
+  const [direction, setDirection] = useState(0);
   const navigate = useNavigate();
 
   const username = document.cookie
@@ -27,7 +29,7 @@ function Matchmaking() {
 
       try {
         const subscriptionResponse = await axios.get(
-          "http://localhost:3001/subscription",
+          "http://localhost:3006/subscription",
           { params: { username } }
         );
 
@@ -35,19 +37,18 @@ function Matchmaking() {
           const type = subscriptionResponse.data.subscriptionType;
           setSubscriptionType(type);
           if (type === "premium") {
-            setSwipesLeft(Infinity); // Unlimited swipes for premium users
+            setSwipesLeft(Infinity);
           }
         } else {
           setError(
-            subscriptionResponse.data.message ||
-              "Failed to fetch subscription type."
+            subscriptionResponse.data.message || "Failed to fetch subscription type."
           );
           setSubscriptionType("basic");
         }
 
         const [jobsResponse, userResponse] = await Promise.all([
-          axios.get(`http://localhost:3001/all-jobs?username=${username}`),
-          axios.get(`http://localhost:3001/user-skills?username=${username}`),
+          axios.get(`http://localhost:3006/all-jobs?username=${username}`),
+          axios.get(`http://localhost:3006/user-skills?username=${username}`),
         ]);
 
         if (jobsResponse.data.success && userResponse.data.success) {
@@ -59,15 +60,25 @@ function Matchmaking() {
             (job) => !alreadySwiped.includes(job._id)
           );
 
-          const sortedJobs = filteredJobs.sort((a, b) => {
-            const aMatches = (a.skills || []).filter((skill) =>
-              (userSkills || []).includes(skill)
+          const jobsWithSuitability = filteredJobs.map((job) => {
+            const totalSkills = job.skills?.length || 0;
+            const matchingSkills = (job.skills || []).filter((skill) =>
+              userSkills.includes(skill)
             ).length;
-            const bMatches = (b.skills || []).filter((skill) =>
-              (userSkills || []).includes(skill)
-            ).length;
-            return bMatches - aMatches; // Higher matches come first
+
+            let suitabilityPercentage = 0;
+
+            if (matchingSkills > 0) {
+              suitabilityPercentage =
+                60 + Math.round((40 * matchingSkills) / totalSkills);
+            }
+
+            return { ...job, suitabilityPercentage };
           });
+
+          const sortedJobs = jobsWithSuitability.sort(
+            (a, b) => b.suitabilityPercentage - a.suitabilityPercentage
+          );
 
           setJobs(sortedJobs);
         } else {
@@ -85,10 +96,10 @@ function Matchmaking() {
   const handleSwipe = async (swipeDirection) => {
     if (!username || !jobs[currentIndex]) return;
 
-    setDirection(swipeDirection); // Set swipe direction for animation
+    setDirection(swipeDirection);
 
     setTimeout(() => {
-      setCurrentIndex((prevIndex) => prevIndex + 1); // Move to the next job after animation
+      setCurrentIndex((prevIndex) => prevIndex + 1);
     }, 300);
 
     if (subscriptionType === "basic" && swipesLeft <= 0) {
@@ -100,14 +111,14 @@ function Matchmaking() {
       const jobId = jobs[currentIndex]._id;
       const status = swipeDirection === 1 ? "yes" : "no";
 
-      await axios.post("http://localhost:3001/swipe", {
+      await axios.post("http://localhost:3006/swipe", {
         username,
         jobId,
         status,
       });
 
       if (subscriptionType === "basic") {
-        setSwipesLeft((prev) => prev - 1); // Decrease swipes for basic users
+        setSwipesLeft((prev) => prev - 1);
       }
     } catch (err) {
       console.error("Error saving swipe:", err.response?.data || err.message);
@@ -116,8 +127,8 @@ function Matchmaking() {
   };
 
   const skipJob = () => {
-    setDirection(0); // Reset direction for animation
-    setCurrentIndex((prevIndex) => prevIndex + 1); // Move to the next job
+    setDirection(0);
+    setCurrentIndex((prevIndex) => prevIndex + 1);
   };
 
   const currentJob = jobs[currentIndex];
@@ -180,7 +191,6 @@ function Matchmaking() {
         color: "#fff",
       }}
     >
-      {/* Back to Home Arrow Button */}
       <button
         className="btn btn-link mb-4"
         onClick={() => navigate("/home")}
@@ -213,51 +223,91 @@ function Matchmaking() {
             exit={{ x: direction === 1 ? 300 : -300, opacity: 0 }}
             transition={{ duration: 0.3 }}
             style={{
-              maxWidth: "400px",
+              maxWidth: "450px", // Adjusted width to make the box thinner
               margin: "0 auto",
               borderRadius: "12px",
               overflow: "hidden",
               background: "#fff",
               padding: "20px",
               color: "#333",
+              position: "relative",
             }}
           >
-            <div className="d-flex align-items-center mb-3">
-              {currentJob.companyLogo && (
-                <img
-                  src={currentJob.companyLogo}
-                  alt="Company Logo"
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    marginRight: "10px",
-                  }}
+            {currentJob.suitabilityPercentage > 0 && ( // Only show if percentage is greater than 0
+              <div
+                style={{
+                  position: "absolute",
+                  top: "20px",
+                  right: "20px",
+                  width: "80px",
+                  height: "80px",
+                }}
+              >
+                <CircularProgressbar
+                  value={currentJob.suitabilityPercentage}
+                  text={`${currentJob.suitabilityPercentage}%`}
+                  styles={buildStyles({
+                    textSize: "16px",
+                    textColor: "#333",
+                    pathColor: "#007BFF",
+                    trailColor: "#E5E5E5",
+                  })}
                 />
-              )}
-              <h5 className="m-0" style={{ fontWeight: "600" }}>
-                {currentJob.title}
-              </h5>
+              </div>
+            )}
+            <div className="d-flex flex-column">
+              <div
+                className="d-flex align-items-start"
+                style={{
+                  marginBottom: "1rem",
+                  flexWrap: "wrap", // Allow wrapping for long titles
+                }}
+              >
+                {currentJob.companyLogo && (
+                  <img
+                    src={currentJob.companyLogo}
+                    alt="Company Logo"
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      marginRight: "10px",
+                    }}
+                  />
+                )}
+                <h5
+                  className="m-0"
+                  style={{
+                    fontWeight: "600",
+                    wordBreak: "break-word",
+                    maxWidth: "250px",
+                    overflowWrap: "break-word",
+                    textAlign: "left",
+                  }}
+                >
+                  {currentJob.title}
+                </h5>
+              </div>
+              <p>
+                <strong>Location:</strong> {currentJob.location}
+              </p>
+              <p>
+                <strong>Type:</strong> {currentJob.jobType}
+              </p>
+              <p>
+                <strong>Description:</strong> {currentJob.description}
+              </p>
+              <p>
+                <strong>Application Deadline:</strong>{" "}
+                {new Date(currentJob.applicationDeadline).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Skills:</strong>{" "}
+                {currentJob.skills && currentJob.skills.length > 0
+                  ? currentJob.skills.join(", ")
+                  : "No specific skills mentioned"}
+              </p>
             </div>
-            <p>
-              <strong>Location:</strong> {currentJob.location}
-            </p>
-            <p>
-              <strong>Type:</strong> {currentJob.jobType}
-            </p>
-            <p>
-              <strong>Description:</strong> {currentJob.description}
-            </p>
-            <p>
-              <strong>Application Deadline:</strong>{" "}
-              {new Date(currentJob.applicationDeadline).toLocaleDateString()}
-            </p>
-            <p>
-              <strong>Skills:</strong>{" "}
-              {currentJob.skills && currentJob.skills.length > 0
-                ? currentJob.skills.join(", ")
-                : "No specific skills mentioned"}
-            </p>
             <div className="text-center mt-3">
               <button
                 className="btn btn-danger me-2"

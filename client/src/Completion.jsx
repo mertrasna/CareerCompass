@@ -140,7 +140,7 @@ function Completion() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/complete-profile",
+        "http://localhost:3003/complete-profile",
         profileData,
         {
           headers: {

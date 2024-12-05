@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FiArrowLeft } from "react-icons/fi"; // Import arrow icon
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios";
+import { FiArrowLeft } from "react-icons/fi"; // Import arrow icon
 
 function Post() {
   const [formData, setFormData] = useState({
@@ -14,12 +14,15 @@ function Post() {
     companyName: "",
     salaryMin: "",
     salaryMax: "",
-    applicationDeadline: "",
+    applicationDeadline: ""
   });
 
-  const [companyLogo, setCompanyLogo] = useState(null);
+  const [companyLogo, setCompanyLogo] = useState(null); // For logo upload
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialize useNavigate for redirection
+
+  // Get the logged-in employer ID (Assuming it's stored in localStorage after login)
+  const employerId = localStorage.getItem("employerId"); // Replace with your actual auth logic
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,16 +44,18 @@ function Post() {
   };
 
   const handleFileChange = (e) => {
-    setCompanyLogo(e.target.files[0]);
+    setCompanyLogo(e.target.files[0]); // Store the uploaded file
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Filter out empty requirements and skills
     const filteredRequirements = formData.requirements.filter((req) => req.trim() !== "");
     const filteredSkills = formData.skills.filter((skill) => skill.trim() !== "");
-
+  
     try {
+      // Prepare the form data
       const data = new FormData();
       Object.entries({
         ...formData,
@@ -58,26 +63,30 @@ function Post() {
         skills: filteredSkills,
       }).forEach(([key, value]) => {
         if (Array.isArray(value)) {
-          value.forEach((v) => data.append(key, v));
+          value.forEach((v) => data.append(key, v)); // Append array elements separately
         } else {
           data.append(key, value);
         }
       });
       if (companyLogo) data.append("companyLogo", companyLogo);
-
+  
+      const username = "Barreett57"; // Replace with the actual logged-in username
+  
       const response = await axios.post("http://localhost:3001/posts", data, {
         headers: {
           "Content-Type": "multipart/form-data",
+          username, // Pass username in headers
         },
       });
-
+      console.log(response.data);
       alert("Job post created successfully!");
-      navigate("/home");
+      navigate("/home"); // Redirect to home page after successful post
     } catch (error) {
       console.error("Error posting job:", error.response?.data || error.message);
       alert("Failed to create job post. Please try again.");
     }
   };
+  
 
   return (
     <div

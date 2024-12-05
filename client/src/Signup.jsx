@@ -41,7 +41,7 @@ function Signup() {
     }
 
     axios
-      .post("http://localhost:3001/register", {
+      .post("http://localhost:3002/register", {
         firstName,
         lastName,
         username,

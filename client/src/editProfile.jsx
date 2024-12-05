@@ -15,7 +15,7 @@ function EditProfile() {
   useEffect(() => {
     // Fetch user data from backend
     axios
-      .post("http://localhost:3001/userdata", { username })
+      .post("http://localhost:3003/userdata", { username })
       .then((response) => {
         const userData = response.data.user;
         setContactNumber(userData.contactNumber || "");
@@ -77,7 +77,7 @@ function EditProfile() {
     console.log("Updated Data Payload:", updatedData);
   
     try {
-      await axios.post("http://localhost:3001/complete-profile", updatedData);
+      await axios.post("http://localhost:3003/complete-profile", updatedData);
       alert("Profile updated successfully!");
       navigate("/profile");
     } catch (error) {

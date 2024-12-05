@@ -28,7 +28,7 @@ function Matched() {
       }
 
       try {
-        const response = await axios.get("http://localhost:3001/matched-job-seekers", {
+        const response = await axios.get("http://localhost:3006/matched-job-seekers", {
           params: { username },
         });
 
@@ -47,9 +47,37 @@ function Matched() {
     fetchMatchedJobSeekers();
   }, [username]);
 
+  const downloadPDF = (pdfData, fileName) => {
+    try {
+      if (!pdfData || typeof pdfData !== "string") {
+        throw new Error("Invalid PDF data.");
+      }
+
+      const base64String = pdfData.includes("base64,")
+        ? pdfData.split("base64,")[1]
+        : pdfData;
+
+      const binaryData = Uint8Array.from(atob(base64String), (char) => char.charCodeAt(0));
+
+      const blob = new Blob([binaryData], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+      alert("Failed to download CV. Please try again.");
+    }
+  };
+
+
   const handleAccept = async (seekerUsername, postId) => {
     try {
-      const response = await axios.post("http://localhost:3001/process-decision", {
+      const response = await axios.post("http://localhost:3006/process-decision", {
         employerUsername: username,
         seekerUsername,
         postId,
@@ -74,11 +102,10 @@ function Matched() {
     }
 
     try {
-      const response = await axios.post("http://localhost:3001/process-decision", {
+      const response = await axios.post("http://localhost:3007/schedule-interview", {
         employerUsername: username,
         seekerUsername: selectedCandidate.seekerUsername,
         postId: selectedCandidate.postId,
-        decision: "yes",
         interviewDate: selectedDate,
       });
 
@@ -99,7 +126,7 @@ function Matched() {
 
   const handleReject = async (seekerUsername, postId) => {
     try {
-      const response = await axios.post("http://localhost:3001/process-decision", {
+      const response = await axios.post("http://localhost:3006/process-decision", {
         employerUsername: username,
         seekerUsername,
         postId,
@@ -188,7 +215,7 @@ function Matched() {
                         fontSize: "1.2em",
                       }}
                     >
-                      ★
+                      ★ Verified
                     </span>
                   )}
                 </h5>
@@ -203,33 +230,26 @@ function Matched() {
                 </p>
                 <div className="text-center mt-3">
                   <button
+                    className="btn btn-primary mt-2"
+                    onClick={() => downloadPDF(seeker.pdfData, `${seeker.firstName}_${seeker.lastName}_CV.pdf`)}
+                  >
+                    Download CV
+                  </button>
+                </div>
+                <div className="text-center mt-3">
+                  <button
                     className="btn btn-outline-success me-2"
                     onClick={() => handleAccept(seeker.username, seeker.postId)}
-                    style={{
-                      borderRadius: "8px",
-                      padding: "8px 16px",
-                      borderColor: "#28a745",
-                      color: "#28a745",
-                      transition: "all 0.3s ease",
-                    }}
                   >
                     Accept
                   </button>
                   <button
                     className="btn btn-outline-danger"
                     onClick={() => handleReject(seeker.username, seeker.postId)}
-                    style={{
-                      borderRadius: "8px",
-                      padding: "8px 16px",
-                      borderColor: "#dc3545",
-                      color: "#dc3545",
-                      transition: "all 0.3s ease",
-                    }}
                   >
                     Reject
                   </button>
                 </div>
-
                 {selectedCandidate &&
                   selectedCandidate.seekerUsername === seeker.username &&
                   selectedCandidate.postId === seeker.postId && (

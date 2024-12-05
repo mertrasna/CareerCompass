@@ -33,7 +33,7 @@ function Notifications() {
       }
 
       try {
-        const response = await axios.get("http://localhost:3001/interview-notifications", {
+        const response = await axios.get("http://localhost:3007/interview-notifications", {
           params: { username },
         });
 

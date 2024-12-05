@@ -45,7 +45,7 @@ function Profile() {
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.post("http://localhost:3001/userdata", {
+        const response = await axios.post("http://localhost:3003/userdata", {
           username,
         });
         setUser(response.data.user);
@@ -100,7 +100,7 @@ function Profile() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/updateProfilePic",
+        "http://localhost:3003/updateProfilePic",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -125,7 +125,7 @@ function Profile() {
     formData.append("username", Cookies.get("username"));
 
     try {
-      const response = await axios.post("http://localhost:3001/uploadDocument", formData, {
+      const response = await axios.post("http://localhost:3003/uploadDocument", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log("Document uploaded successfully:", response.data);
@@ -247,15 +247,26 @@ function Profile() {
         </div>
         <p>{profileCompletion}% Complete</p>
         {profileCompletion === 100 && (
-          <>
-            <h3 style={styles.subHeading}>VERIFY YOURSELF</h3>
-            <p style={styles.description}>
-              Upload a document to verify your identity
-            </p>
-            <button onClick={openVerifyModal} style={styles.verifyButton}>
-              Verify Yourself
-            </button>
-          </>
+          <div style={styles.verificationContainer}>
+  <p>
+    <strong>Verification Status:</strong>
+    {user.verified ? (
+      <span style={styles.verifiedContainer}>
+        <span style={styles.verifiedTick}>✔</span> VERIFIED
+      </span>
+    ) : (
+      <>
+        <span style={styles.notVerified}>Not Verified</span>
+        <h3 style={styles.subHeading}>VERIFY YOURSELF</h3>
+        <button onClick={openVerifyModal} style={styles.verifyButton}>
+          Verify Yourself
+        </button>
+      </>
+    )}
+  </p>
+</div>
+
+
         )}
       </div>
 
@@ -540,6 +551,32 @@ const styles = {
     padding: "10px 20px",
     borderRadius: "6px",
     cursor: "pointer",
+  },
+  verificationContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center", // Horizontally center
+    justifyContent: "center", // Vertically center
+    textAlign: "center",
+    marginTop: "20px", // Add some spacing from the top
+  },
+  verifiedContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    color: "#4CAF50", // Green color for verified
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: "1.2rem",
+  },
+  verifiedTick: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    color: "#4CAF50", // Same green color for the tick mark
+  },
+  notVerified: {
+    color: "#FF0000", // Red color for not verified
+    fontWeight: "bold",
   },
   error: {
     textAlign: "center",

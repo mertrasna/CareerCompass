@@ -16,12 +16,10 @@ const Settings = () => {
   const [language, setLanguage] = useState(() => Cookies.get("language") || "English");
   const [fontSize, setFontSize] = useState(() => Cookies.get("fontSize") || "Medium");
 
-  // Apply global font size
   useEffect(() => {
     document.body.style.fontSize = fontSizeMap[fontSize];
   }, [fontSize]);
 
-  // Apply dark mode styles dynamically
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty("--table-bg-color", darkMode ? "#121212" : "#ffffff");
@@ -71,7 +69,7 @@ const Settings = () => {
     if (window.confirm("Are you sure you want to delete your account?")) {
       const username = Cookies.get("username");
       try {
-        const response = await fetch("http://localhost:3001/delete-account", {
+        const response = await fetch("http://localhost:3003/delete-account", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username }),
@@ -102,11 +100,13 @@ const Settings = () => {
 
   return (
     <div style={styles.page}>
+      {/* Arrow Button */}
+      <div style={styles.arrowContainer} onClick={() => navigate("/home")}>
+        ←
+      </div>
       <div style={styles.container}>
         <h1 style={styles.title}>Settings</h1>
-        <button onClick={() => navigate("/home")} style={styles.backButton}>
-          Back to Home
-        </button>
+        <hr style={styles.divider} />
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Appearance</h2>
           <div style={styles.switchContainer}>
@@ -123,6 +123,7 @@ const Settings = () => {
             </label>
           </div>
         </div>
+        <hr style={styles.divider} />
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Language</h2>
           <label htmlFor="languageSelect" style={styles.label}>Choose a language:</label>
@@ -137,6 +138,7 @@ const Settings = () => {
             <option value="Turkish">Turkish</option>
           </select>
         </div>
+        <hr style={styles.divider} />
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Font Size</h2>
           <label htmlFor="fontSizeSelect" style={styles.label}>Choose font size:</label>
@@ -151,6 +153,7 @@ const Settings = () => {
             <option value="Large">Large</option>
           </select>
         </div>
+        <hr style={styles.divider} />
         <button onClick={handleLogOut} style={styles.logoutButton}>
           Log Out
         </button>
@@ -168,13 +171,24 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #FFA500, #0056b3)", // Fading orange-to-blue gradient
-    fontFamily: "'Poppins', sans-serif", // Modern font
+    background: "linear-gradient(135deg, #FFA500, #0056b3)",
+    position: "relative",
+  },
+  arrowContainer: {
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    fontSize: "1.5rem",
+    cursor: "pointer",
+    background: "none",
+    border: "none",
+    color: "#ffffff",
+    fontWeight: "bold",
   },
   container: {
     width: "500px",
-    backgroundColor: "var(--table-bg-color)", // Dynamically updated
-    color: "var(--table-text-color)", // Dynamically updated
+    backgroundColor: "var(--table-bg-color)",
+    color: "var(--table-text-color)",
     borderRadius: "10px",
     padding: "20px",
     boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
@@ -183,15 +197,6 @@ const styles = {
   title: {
     fontSize: "2.5rem",
     marginBottom: "20px",
-  },
-  backButton: {
-    marginBottom: "20px",
-    padding: "10px 20px",
-    backgroundColor: "#4caf50",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
   },
   section: {
     marginBottom: "20px",
@@ -235,6 +240,12 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+  },
+  divider: {
+    border: "0",
+    height: "1px",
+    background: "linear-gradient(to right, #ccc, transparent)",
+    margin: "20px 0",
   },
 };
 

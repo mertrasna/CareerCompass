@@ -27,7 +27,7 @@ function Builder() {
 
     // Fetch user data when the component mounts
     axios
-      .post("http://localhost:3001/userdata", { username })
+      .post("http://localhost:3003/userdata", { username })
       .then((res) => {
         if (res.data.success) {
           setFormData(res.data.user);

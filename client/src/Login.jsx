@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { GoogleLogin } from "react-google-login"; // Import Google login
-import { gapi } from "gapi-script"; // Required for older versions of react-google-login
-import Cookies from "js-cookie"; // For saving cookies
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Eye icons for password toggle
+import { GoogleLogin } from "react-google-login";
+import { gapi } from "gapi-script";
+import Cookies from "js-cookie";
 
 function Login() {
   const navigate = useNavigate();
@@ -12,9 +11,8 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const clientId = "205575379291-8vhgu540m1nhrff1erirg4509unntru7.apps.googleusercontent.com"; // Replace with your Google Client ID
+  const clientId = "205575379291-8vhgu540m1nhrff1erirg4509unntru7.apps.googleusercontent.com";
 
-  // Initialize Google API
   useEffect(() => {
     function start() {
       gapi.client.init({
@@ -25,7 +23,6 @@ function Login() {
     gapi.load("client:auth2", start);
   }, [clientId]);
 
-  // Handle form-based login submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -36,13 +33,12 @@ function Login() {
     }
 
     try {
-      const response = await axios.post("http://localhost:3001/login", {
+      const response = await axios.post("http://localhost:3002/login", {
         username,
         password,
       });
 
       if (response.data.success) {
-        // Save the username in cookies
         Cookies.set("username", response.data.user.username);
 
         if (username.toLowerCase() === "admin") {
@@ -58,16 +54,13 @@ function Login() {
     }
   };
 
-  // Handle Google login success
   const handleGoogleSuccess = async (response) => {
     try {
       const { tokenId } = response;
       const res = await axios.post("http://localhost:3001/google-login", { tokenId });
 
       if (res.data.success) {
-        // Save user info in cookies
         Cookies.set("username", res.data.user.username);
-
         navigate(`/home`);
       } else {
         setError("Google login failed. Please try again.");
@@ -77,7 +70,6 @@ function Login() {
     }
   };
 
-  // Handle Google login failure
   const handleGoogleFailure = (response) => {
     setError("Google login failed. Please try again.");
   };
@@ -94,7 +86,6 @@ function Login() {
         color: "#fff",
       }}
     >
-      {/* Header Section */}
       <header
         style={{
           width: "100%",
@@ -117,7 +108,6 @@ function Login() {
         </h1>
       </header>
 
-      {/* Tagline Above the Form */}
       <h2
         style={{
           textAlign: "center",
@@ -135,14 +125,13 @@ function Login() {
         Match. Work. Thrive.
       </h2>
 
-      {/* Login Form Section */}
       <div
         style={{
           background: "#fff",
           padding: "20px",
           borderRadius: "12px",
           boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-          maxWidth: "350px",  // Reduced width of modal box
+          maxWidth: "350px",
           width: "100%",
         }}
       >
@@ -191,7 +180,6 @@ function Login() {
           </button>
         </form>
 
-        {/* Divider with OR */}
         <div
           style={{
             display: "flex",
@@ -207,7 +195,7 @@ function Login() {
               marginRight: "10px",
             }}
           />
-          <span style={{ color: "black" }}>or</span>  {/* Changed "or" text color to black */}
+          <span style={{ color: "black" }}>or</span>
           <hr
             style={{
               flex: 1,
@@ -217,7 +205,6 @@ function Login() {
           />
         </div>
 
-        {/* Google Login Button */}
         <div className="mt-3 text-center">
           <GoogleLogin
             clientId={clientId}
@@ -230,12 +217,17 @@ function Login() {
 
         <p className="mt-3 text-center">
           Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-decoration-none text-light"
-            style={{ fontWeight: "bold" }}
-          >
-            Register
+          <Link to="/signup">
+            <button
+              className="btn btn-primary"
+              style={{
+                fontWeight: "bold",
+                borderRadius: "5px",
+                padding: "10px 20px",
+              }}
+            >
+              Register now!
+            </button>
           </Link>
         </p>
       </div>

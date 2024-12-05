@@ -17,7 +17,7 @@ function Subscription() {
       }
 
       try {
-        const response = await axios.get("http://localhost:3001/subscription", {
+        const response = await axios.get("http://localhost:3004/subscription", {
           params: { username },
         });
 
@@ -50,7 +50,7 @@ function Subscription() {
     setIsCancelling(true);
 
     try {
-      const response = await axios.post("http://localhost:3001/cancel-subscription", {
+      const response = await axios.post("http://localhost:3004/cancel-subscription", {
         username,
       });
 

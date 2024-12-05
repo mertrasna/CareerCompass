@@ -30,7 +30,7 @@ class NotificationManager {
       console.log("Notification added to cookies and system:", notification.message);
 
       // Send notification to the server for persistence/logging
-      fetch("http://localhost:3001/log-notification", {
+      fetch("http://localhost:3007/log-notification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notification }),

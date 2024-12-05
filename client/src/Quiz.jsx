@@ -1,6 +1,8 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import React, { useState } from 'react';
+import { FiArrowLeft } from 'react-icons/fi';
+import { useNavigate } from "react-router-dom";
 
 const appId = "6e1ce45d";
 const apiKey = "9939d5235fd78dee6f4aa9cf2b239580";
@@ -108,6 +110,8 @@ function Quiz() {
   const [loading, setLoading] = useState(false);
   const [hoveredOption, setHoveredOption] = useState(null);
   const [hoveredQuestion, setHoveredQuestion] = useState(false);
+  const navigate = useNavigate();
+  
 
   const handleOptionClick = (value) => {
     setResponses([...responses, value]);
@@ -171,9 +175,23 @@ function Quiz() {
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   if (showResult) {
+    const personalityType = calculatePersonalityType(); 
+
     return (
       <div style={styles.container}>
-        <h2 style={styles.resultTitle}>ESFP</h2>
+      <button
+        className="btn btn-link mb-4"
+        onClick={() => navigate("/home")}
+        style={{
+          color: "#fff",
+          fontSize: "1.5rem",
+          border: "none",
+          background: "none",
+        }}
+      >
+        <FiArrowLeft />
+      </button>
+         <h2 style={styles.resultTitle}>{personalityType}</h2> {/* Display the personality type */}
         {loading ? (
           <p>Loading job suggestions...</p>
         ) : jobSuggestions.length > 0 ? (
@@ -192,6 +210,7 @@ function Quiz() {
         ) : (
           <p>No job suggestions found.</p>
         )}
+
         <button style={styles.button} onClick={() => window.location.reload()}>
           Retake Quiz
         </button>
@@ -201,6 +220,21 @@ function Quiz() {
 
   return (
     <div style={styles.container}>
+    <button
+          className="btn btn-link"
+          onClick={() => navigate("/home")}
+          style={{
+            position: "absolute",
+            top: "10px",
+            left: "10px",
+            color: "#fff",
+            fontSize: "1.5rem",
+            background: "none",
+            border: "none",
+          }}
+        >
+          <FiArrowLeft />
+        </button>
       <div style={styles.progressBarContainer}>
         <div
           style={{
