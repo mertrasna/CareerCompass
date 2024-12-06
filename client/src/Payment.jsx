@@ -1,3 +1,5 @@
+//importing necessary modules
+
 import axios from "axios";
 import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
@@ -56,6 +58,7 @@ function Payment() {
     setCardType(detectCardType(value));
   };
 
+  //update subscription status
   const updateSubscription = async () => {
     try {
       const response = await axios.post("http://localhost:3004/update-subscription", {
@@ -77,6 +80,7 @@ function Payment() {
     }
   };
 
+  // payment only works if user is logged in
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -114,7 +118,7 @@ function Payment() {
       } else {
         setPaymentStatus("Insufficient wallet balance.");
       }
-    } else if (paymentMethod === "card") {
+    } else if (paymentMethod === "card") { // check card details in database
       try {
         const response = await axios.post("http://localhost:3004/payment", {
           username,

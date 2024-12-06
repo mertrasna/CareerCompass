@@ -1,11 +1,12 @@
-import axios from "axios"; // Axios for making the request
+//importing necessary modules
+import axios from "axios"; 
 import React, { useEffect, useState } from "react";
 import { FiBell, FiCalendar, FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 const Navbar = ({ userRole = "job_seeker" }) => {
   const [username, setUsername] = useState("");
-  const [language, setLanguage] = useState("en"); // Default language
+  const [language, setLanguage] = useState("en"); 
   const [profilePicture, setProfilePicture] = useState("");
 
   // Fetch the username and language from localStorage when the component mounts
@@ -18,16 +19,16 @@ const Navbar = ({ userRole = "job_seeker" }) => {
     }
 
     if (storedLanguage) {
-      setLanguage(storedLanguage); // Set language from localStorage if available
+      setLanguage(storedLanguage); 
     }
   }, []);
 
-  // Save the selected language in localStorage whenever it changes
+  
   useEffect(() => {
     if (username) {
-      localStorage.setItem(`language_${username}`, language); // Save language in localStorage based on username
+      localStorage.setItem(`language_${username}`, language); 
     }
-  }, [language, username]); // Trigger whenever language or username state changes
+  }, [language, username]); 
 
   // Handle language change
   const handleLanguageChange = async (e) => {
@@ -119,7 +120,7 @@ const Navbar = ({ userRole = "job_seeker" }) => {
         )}
         {username && (
           <span style={styles.username} data-translate="usernameText">
-            
+            {username}
           </span>
         )}
       </div>
@@ -179,15 +180,15 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "20px",
-    marginLeft: "auto", // Push the right section to the far end
+    marginLeft: "auto", 
   },
   navLink: {
     color: "#fff",
     textDecoration: "none",
     fontSize: "1rem",
-    padding: "8px 12px", // Add padding for the rounded box
-    borderRadius: "20px", // Rounded corners
-    transition: "background-color 0.3s ease", // Smooth transition
+    padding: "8px 12px", 
+    borderRadius: "20px", 
+    transition: "background-color 0.3s ease", 
   },
   username: {
     color: "#fff",
@@ -198,11 +199,11 @@ const styles = {
   profilePicture: {
     width: "30px",
     height: "30px",
-    borderRadius: "50%", // Circular profile picture
-    marginRight: "10px", // Space between profile picture and username
+    borderRadius: "50%", 
+    marginRight: "10px", 
   },
   languageSelector: {
-    paddingLeft: "20px", // Add padding between language selector and other items
+    paddingLeft: "20px", 
   },
 };
 

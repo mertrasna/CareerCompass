@@ -45,7 +45,7 @@ function Profile() {
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.post("http://localhost:3003/userdata", {
+        const response = await axios.post("http://localhost:3001/userdata", {
           username,
         });
         setUser(response.data.user);
@@ -100,7 +100,7 @@ function Profile() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3003/updateProfilePic",
+        "http://localhost:3001/updateProfilePic",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -125,7 +125,7 @@ function Profile() {
     formData.append("username", Cookies.get("username"));
 
     try {
-      const response = await axios.post("http://localhost:3003/uploadDocument", formData, {
+      const response = await axios.post("http://localhost:3001/uploadDocument", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log("Document uploaded successfully:", response.data);
@@ -555,16 +555,16 @@ const styles = {
   verificationContainer: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center", // Horizontally center
-    justifyContent: "center", // Vertically center
+    alignItems: "center",  
+    justifyContent: "center",  
     textAlign: "center",
-    marginTop: "20px", // Add some spacing from the top
+    marginTop: "20px",
   },
   verifiedContainer: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    color: "#4CAF50", // Green color for verified
+    color: "#4CAF50",  
     fontWeight: "bold",
     textAlign: "center",
     fontSize: "1.2rem",
@@ -572,10 +572,10 @@ const styles = {
   verifiedTick: {
     fontSize: "1.5rem",
     fontWeight: "bold",
-    color: "#4CAF50", // Same green color for the tick mark
+    color: "#4CAF50",  
   },
   notVerified: {
-    color: "#FF0000", // Red color for not verified
+    color: "#FF0000",  
     fontWeight: "bold",
   },
   error: {
@@ -589,11 +589,11 @@ const styles = {
     fontWeight: "bold",
     marginTop: "0px",
     color: "#fff",
-    textAlign: "center", // Align text to the center
-    textTransform: "uppercase", // Transform text to uppercas
-    textDecoration: "underline", // Adds an underline directly beneath the text
-  textDecorationThickness: "1px", // Adjust the thickness
-  textUnderlineOffset: "6px", // Space between text and underline
+    textAlign: "center", 
+    textTransform: "uppercase",  
+    textDecoration: "underline",  
+  textDecorationThickness: "1px",  
+  textUnderlineOffset: "6px",  
   },
   description: {
     fontSize: "14px",
@@ -601,7 +601,7 @@ const styles = {
     marginBottom: "20px",
     color: "#fff",
   },
-  // Add this to styles:
+  
 cardDetailsContainer: {
   background: "rgba(255, 255, 255, 0.2)",
   borderRadius: "12px",

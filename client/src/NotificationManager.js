@@ -13,6 +13,7 @@ class NotificationManager {
 
   // Remove an observer
   removeObserver(observer) {
+    
     console.log("Observer removed:", observer); // Debug log
     this.observers = this.observers.filter((obs) => obs !== observer);
   }

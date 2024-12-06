@@ -1,12 +1,14 @@
+//importing necessary modules
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import React, { useState } from 'react';
-import { FiArrowLeft } from 'react-icons/fi';
-import { useNavigate } from "react-router-dom";
+import Navbar from './Navbar';
 
+//JOB API details
 const appId = "6e1ce45d";
 const apiKey = "9939d5235fd78dee6f4aa9cf2b239580";
 
+//mapping personality type to keywords
 function Quiz() {
   const jobKeywords = {
     ENTP: ["entrepreneur", "product manager", "consultant", "marketing", "startup"],
@@ -110,8 +112,6 @@ function Quiz() {
   const [loading, setLoading] = useState(false);
   const [hoveredOption, setHoveredOption] = useState(null);
   const [hoveredQuestion, setHoveredQuestion] = useState(false);
-  const navigate = useNavigate();
-  
 
   const handleOptionClick = (value) => {
     setResponses([...responses, value]);
@@ -123,6 +123,8 @@ function Quiz() {
     }
   };
 
+
+  //fetching job suggestions using API
   const fetchJobSuggestions = async () => {
     setLoading(true);
     const personalityType = calculatePersonalityType();
@@ -146,6 +148,7 @@ function Quiz() {
     setLoading(false);
   };
 
+  // save personality type
   const savePersonalityType = async (personalityType) => {
     try {
       const username = Cookies.get('username');
@@ -162,6 +165,7 @@ function Quiz() {
     }
   };
 
+  
   const calculatePersonalityType = () => {
     const types = [
       responses[0] >= 0 ? "E" : "I",
@@ -175,23 +179,9 @@ function Quiz() {
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   if (showResult) {
-    const personalityType = calculatePersonalityType(); 
-
     return (
       <div style={styles.container}>
-      <button
-        className="btn btn-link mb-4"
-        onClick={() => navigate("/home")}
-        style={{
-          color: "#fff",
-          fontSize: "1.5rem",
-          border: "none",
-          background: "none",
-        }}
-      >
-        <FiArrowLeft />
-      </button>
-         <h2 style={styles.resultTitle}>{personalityType}</h2> {/* Display the personality type */}
+        <h2 style={styles.resultTitle}>ESFP</h2>
         {loading ? (
           <p>Loading job suggestions...</p>
         ) : jobSuggestions.length > 0 ? (
@@ -210,7 +200,6 @@ function Quiz() {
         ) : (
           <p>No job suggestions found.</p>
         )}
-
         <button style={styles.button} onClick={() => window.location.reload()}>
           Retake Quiz
         </button>
@@ -220,21 +209,7 @@ function Quiz() {
 
   return (
     <div style={styles.container}>
-    <button
-          className="btn btn-link"
-          onClick={() => navigate("/home")}
-          style={{
-            position: "absolute",
-            top: "10px",
-            left: "10px",
-            color: "#fff",
-            fontSize: "1.5rem",
-            background: "none",
-            border: "none",
-          }}
-        >
-          <FiArrowLeft />
-        </button>
+       <Navbar  />
       <div style={styles.progressBarContainer}>
         <div
           style={{

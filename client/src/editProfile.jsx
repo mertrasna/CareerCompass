@@ -6,7 +6,7 @@ import axios from "axios";
 function EditProfile() {
   const [contactNumber, setContactNumber] = useState("");
   const [skills, setSkills] = useState([]);
-  const [skillInput, setSkillInput] = useState(""); // Separate state for the input field
+  const [skillInput, setSkillInput] = useState(""); 
   const [preferredJobType, setPreferredJobType] = useState("");
   const [errors, setErrors] = useState({});
   const username = Cookies.get("username");

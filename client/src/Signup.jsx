@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Import navigate and Link
+import { useNavigate, Link } from "react-router-dom"; 
 import axios from "axios";
 import Cookies from "js-cookie"; // For saving cookies
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Eye icons for password toggle
+import { FaEye, FaEyeSlash } from "react-icons/fa"; 
 
 function Signup() {
   const [firstName, setFirstName] = useState("");

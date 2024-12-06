@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 import axios from "axios";
-import { FiArrowLeft } from "react-icons/fi"; // Import arrow icon
-
+import { FiArrowLeft } from "react-icons/fi"; 
 function Post() {
   const [formData, setFormData] = useState({
     title: "",
@@ -17,12 +16,15 @@ function Post() {
     applicationDeadline: ""
   });
 
-  const [companyLogo, setCompanyLogo] = useState(null); // For logo upload
+  const [companyLogo, setCompanyLogo] = useState(null); 
 
-  const navigate = useNavigate(); // Initialize useNavigate for redirection
+  const navigate = useNavigate(); 
 
-  // Get the logged-in employer ID (Assuming it's stored in localStorage after login)
-  const employerId = localStorage.getItem("employerId"); // Replace with your actual auth logic
+  const employerId = document.cookie
+  .split("; ")
+  .find((row) => row.startsWith("employerId="))
+  ?.split("=")[1];
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,18 +46,28 @@ function Post() {
   };
 
   const handleFileChange = (e) => {
-    setCompanyLogo(e.target.files[0]); // Store the uploaded file
+    setCompanyLogo(e.target.files[0]); 
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Filter out empty requirements and skills
     const filteredRequirements = formData.requirements.filter((req) => req.trim() !== "");
     const filteredSkills = formData.skills.filter((skill) => skill.trim() !== "");
   
     try {
-      // Prepare the form data
+    
+      const cookies = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("username="));
+      const username = cookies ? cookies.split("=")[1] : null;
+  
+      if (!username) {
+        alert("Username not found in cookies. Please log in.");
+        return;
+      }
+  
+      //  the form data
       const data = new FormData();
       Object.entries({
         ...formData,
@@ -63,19 +75,17 @@ function Post() {
         skills: filteredSkills,
       }).forEach(([key, value]) => {
         if (Array.isArray(value)) {
-          value.forEach((v) => data.append(key, v)); // Append array elements separately
+          value.forEach((v) => data.append(key, v));
         } else {
           data.append(key, value);
         }
       });
       if (companyLogo) data.append("companyLogo", companyLogo);
   
-      const username = "Barreett57"; // Replace with the actual logged-in username
-  
       const response = await axios.post("http://localhost:3001/posts", data, {
         headers: {
           "Content-Type": "multipart/form-data",
-          username, // Pass username in headers
+          username, // 
         },
       });
       console.log(response.data);
@@ -87,6 +97,7 @@ function Post() {
     }
   };
   
+  
 
   return (
     <div
@@ -96,7 +107,7 @@ function Post() {
         padding: "20px",
       }}
     >
-      {/* Back to Home Arrow */}
+      
       <button
         onClick={() => navigate("/home")}
         style={{
@@ -175,7 +186,7 @@ function Post() {
             <label
               htmlFor="jobType"
               style={{
-                color: "#333", // Black titles
+                color: "#333", 
               }}
             >
               Job Type
@@ -199,7 +210,7 @@ function Post() {
             <label
               htmlFor="description"
               style={{
-                color: "#333", // Black titles
+                color: "#333", 
               }}
             >
               Description
@@ -243,7 +254,7 @@ function Post() {
           <div className="form-group">
             <label
               style={{
-                color: "#333", // Black titles
+                color: "#333", 
               }}
             >
               Skills
@@ -270,7 +281,7 @@ function Post() {
             <label
               htmlFor="companyName"
               style={{
-                color: "#333", // Black titles
+                color: "#333", 
               }}
             >
               Company Name
@@ -289,7 +300,7 @@ function Post() {
             <label
               htmlFor="companyLogo"
               style={{
-                color: "#333", // Black titles
+                color: "#333", 
               }}
             >
               Company Logo
@@ -305,7 +316,7 @@ function Post() {
           <div className="form-group">
             <label
               style={{
-                color: "#333", // Black titles
+                color: "#333", 
               }}
             >
               Salary Range
@@ -333,7 +344,7 @@ function Post() {
             <label
               htmlFor="applicationDeadline"
               style={{
-                color: "#333", // Black titles
+                color: "#333", 
               }}
             >
               Application Deadline

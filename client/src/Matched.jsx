@@ -5,7 +5,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import DatePicker from "react-datepicker";
 import { motion, AnimatePresence } from "framer-motion";
 import "react-datepicker/dist/react-datepicker.css";
-
+// employers get to see which all job seekrs accepted their proposal on job ad
 function Matched() {
   const [matchedJobSeekers, setMatchedJobSeekers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +46,7 @@ function Matched() {
 
     fetchMatchedJobSeekers();
   }, [username]);
-
+// for user to download cv
   const downloadPDF = (pdfData, fileName) => {
     try {
       if (!pdfData || typeof pdfData !== "string") {

@@ -1,6 +1,10 @@
+//Admin Page 
+
+//importing necessary modules
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
+// state variables for managing users, search term, filters, and selected user details
 const Admin = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -8,6 +12,7 @@ const Admin = () => {
   const [subscriptionFilter, setSubscriptionFilter] = useState("All");
   const [selectedUser, setSelectedUser] = useState(null);
 
+  //fetch all users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -21,6 +26,8 @@ const Admin = () => {
     fetchUsers();
   }, []);
 
+
+  //filter users based on search
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -34,6 +41,7 @@ const Admin = () => {
     return matchesSearch && matchesRole && matchesSubscription;
   });
 
+  // clciking on rows 
   const handleRowClick = async (username) => {
     try {
       const response = await axios.get(
@@ -45,19 +53,21 @@ const Admin = () => {
     }
   };
 
+
+  //verify user
   const handleVerifyUser = async (username) => {
     try {
       const response = await axios.post(
         "http://localhost:3001/api/users/verify",
         {
-          username, // Send username in the request body
+          username, 
         }
       );
       if (response.data.success) {
         alert("User verified successfully!");
-        // Update the local state to reflect the change
+        
         setSelectedUser({ ...selectedUser, verified: true });
-        // Optionally update the users list if needed
+        
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
             user.username === username ? { ...user, verified: true } : user
@@ -70,19 +80,20 @@ const Admin = () => {
     }
   };
 
+  //reject user
   const handleRejectUser = async (username) => {
     try {
       const response = await axios.post(
         "http://localhost:3001/api/users/reject",
         {
-          username, // Send username in the request body
+          username, 
         }
       );
       if (response.data.success) {
         alert("User rejected successfully!");
-        // Update the local state to reflect the change
+        
         setSelectedUser({ ...selectedUser, verified: false });
-        // Optionally update the users list if needed
+        
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
             user.username === username ? { ...user, verified: false } : user
@@ -99,6 +110,7 @@ const Admin = () => {
     setSelectedUser(null);
   };
 
+  // UI
   return (
     <div className="admin-container">
       <h1 className="admin-title">Admin Dashboard</h1>
@@ -144,7 +156,7 @@ const Admin = () => {
 
             <table className="user-details-table">
               <tbody>
-                {/* Dynamic content based on role */}
+                
                 {selectedUser.role === "employer" ? (
                   <>
                     <tr>

@@ -29,7 +29,7 @@ function Matchmaking() {
 
       try {
         const subscriptionResponse = await axios.get(
-          "http://localhost:3006/subscription",
+          "http://localhost:3001/subscription",
           { params: { username } }
         );
 
@@ -47,8 +47,8 @@ function Matchmaking() {
         }
 
         const [jobsResponse, userResponse] = await Promise.all([
-          axios.get(`http://localhost:3006/all-jobs?username=${username}`),
-          axios.get(`http://localhost:3006/user-skills?username=${username}`),
+          axios.get(`http://localhost:3001/all-jobs?username=${username}`),
+          axios.get(`http://localhost:3001/user-skills?username=${username}`),
         ]);
 
         if (jobsResponse.data.success && userResponse.data.success) {
@@ -111,7 +111,7 @@ function Matchmaking() {
       const jobId = jobs[currentIndex]._id;
       const status = swipeDirection === 1 ? "yes" : "no";
 
-      await axios.post("http://localhost:3006/swipe", {
+      await axios.post("http://localhost:3001/swipe", {
         username,
         jobId,
         status,

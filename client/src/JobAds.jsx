@@ -7,13 +7,12 @@ function JobAds() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedPost, setSelectedPost] = useState(null); // For modal actions
-
+  const [selectedPost, setSelectedPost] = useState(null); 
   const username = document.cookie
     .split("; ")
     .find((row) => row.startsWith("username="))
     ?.split("=")[1];
-
+// ftech all posts ONLY employer has posted
   useEffect(() => {
     const fetchEmployerPosts = async () => {
       if (!username) {
@@ -41,7 +40,7 @@ function JobAds() {
 
     fetchEmployerPosts();
   }, [username]);
-
+// delete the job ad for the employer
   const handleDelete = async () => {
     if (!selectedPost) return;
 

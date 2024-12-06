@@ -20,7 +20,7 @@ function Completion() {
     skills: "",
     preferredJobType: "",
   });
-
+// api for location fir user to put in
   const geoapifyApiKey = "21e751dc4d7a4a12a21c8501d6c70d8f";
 
   const skillOptions = [
@@ -88,7 +88,7 @@ function Completion() {
     const filteredInput = input.replace(/[^0-9+\- ]/g, ""); // Allows only numbers, +, -, and spaces
     setContactNumber(filteredInput);
   };
-
+// if job seeker = 
   const validateFirstStep = () => {
     let formErrors = {};
 
@@ -106,7 +106,7 @@ function Completion() {
     console.log("First step errors:", formErrors);
     return Object.keys(formErrors).length === 0;
   };
-
+// if employer
   const validateSecondStep = () => {
     let formErrors = {};
 
@@ -250,7 +250,7 @@ function Completion() {
             </select>
           </div>
 
-          {/* Conditional Fields */}
+          {/* Conditional  */}
           {role === "job_seeker" && (
             <>
               <div className="mb-3">

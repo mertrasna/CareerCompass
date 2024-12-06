@@ -1,14 +1,16 @@
+//importing necessary modules
 import axios from "axios";
 import Cookies from "js-cookie";
-import { jsPDF } from "jspdf"; // Import jsPDF
+import { jsPDF } from "jspdf"; // Import jsPDF for making PDF
 import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 
+
 function Builder() {
-  const [formData, setFormData] = useState(null); // Local state for user data
-  const [originalData, setOriginalData] = useState(null); // To reset changes if needed
-  const [error, setError] = useState(null); // To handle errors
-  const [currentSection, setCurrentSection] = useState(0); // State for active section (index)
+  const [formData, setFormData] = useState(null); 
+  const [originalData, setOriginalData] = useState(null); 
+  const [error, setError] = useState(null); 
+  const [currentSection, setCurrentSection] = useState(0); 
   const sections = [
     { id: "personalInfo", label: "Personal Info" },
     { id: "skills", label: "Skills" },
@@ -25,13 +27,13 @@ function Builder() {
       return;
     }
 
-    // Fetch user data when the component mounts
+    // Fetch user data 
     axios
-      .post("http://localhost:3003/userdata", { username })
+      .post("http://localhost:3001/userdata", { username })
       .then((res) => {
         if (res.data.success) {
           setFormData(res.data.user);
-          setOriginalData(res.data.user); // Keep a copy of the original data
+          setOriginalData(res.data.user); 
         } else {
           setError(res.data.message || "Failed to fetch user data.");
         }
@@ -44,7 +46,7 @@ function Builder() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value }); // Update local state only
+    setFormData({ ...formData, [name]: value }); y
   };
 
   const handleReset = () => {
@@ -56,6 +58,7 @@ function Builder() {
     alert("Data has been updated locally. Check the console for details.");
   };
 
+  //list of skills
   const skillOptions = [
     "Microsoft Office",
     "Excel",
@@ -79,6 +82,7 @@ function Builder() {
     "Network Administration",
   ];
 
+  //downloading pdf
  const handleDownloadPDF = () => {
   const margin = 20; // Margin on all sides
   const doc = new jsPDF();
@@ -258,7 +262,7 @@ function Builder() {
             key={section.id}
             style={{
               ...styles.progressItem,
-              backgroundColor: index === currentSection ? "#007BFF" : "#FF7518", // Highlight current section
+              backgroundColor: index === currentSection ? "#007BFF" : "#FF7518", 
             }}
           >
             {section.label}
