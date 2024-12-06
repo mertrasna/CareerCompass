@@ -120,7 +120,7 @@ const Navbar = ({ userRole = "job_seeker" }) => {
         )}
         {username && (
           <span style={styles.username} data-translate="usernameText">
-            {username}
+
           </span>
         )}
       </div>

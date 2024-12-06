@@ -1,3 +1,5 @@
+// postSeeders.js
+
 const mongoose = require("mongoose");
 const faker = require("faker");
 const PostModel = require("./Post"); // Adjust the path to the Post model
@@ -81,25 +83,27 @@ const generateFakeJobPost = async (employerId) => {
   console.log(`Generated and saved job post: ${newJob.title}`);
 };
 
-// Function to seed job posts for Barrett57
+
+// Function to seed job posts for existing employers
 const seedJobPosts = async (numPosts) => {
   try {
-    console.log(`Seeding ${numPosts} job posts for Barrett57...`);
+    console.log(`Seeding ${numPosts} job posts...`);
 
-    // Fetch the employer Barrett57
-    const employer = await UsersModel.findOne({ username: "Barreett57", role: "employer" });
+    // Fetch all employers
+    const employers = await UsersModel.find({ role: "employer" });
 
-    if (!employer) {
-      console.error("Employer Barrett57 not found. Cannot seed job posts.");
+    if (employers.length === 0) {
+      console.error("No employers found. Cannot seed job posts without employers.");
       return;
     }
 
-    // Generate job posts for Barrett57
+    // Randomly assign posts to employers
     for (let i = 0; i < numPosts; i++) {
-      await generateFakeJobPost(employer._id);
+      const randomEmployer = faker.helpers.randomize(employers);
+      await generateFakeJobPost(randomEmployer._id);
     }
 
-    console.log(`${numPosts} job posts inserted successfully for Barrett57.`);
+    console.log(`${numPosts} job posts inserted successfully.`);
   } catch (error) {
     console.error("Error inserting job posts:", error);
   } finally {
@@ -108,4 +112,4 @@ const seedJobPosts = async (numPosts) => {
 };
 
 // Call the function to seed a specified number of job posts
-seedJobPosts(2); // Adjust the number of job posts to generate
+seedJobPosts(10); // Adjust the number of job posts to generate
