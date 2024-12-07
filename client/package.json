@@ -7,33 +7,38 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "test": "vitest"
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.1",
     "@react-spring/web": "^9.7.5",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "framer-motion": "^11.12.0",
+    "gapi-script": "^1.2.0",
+    "js-cookie": "^3.0.5",
     "react": "^18.2.0",
+    "react-circular-progressbar": "^2.1.0",
+    "react-datepicker": "^7.5.0",
     "react-deck-swiper": "^1.0.9",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.4.0",
     "react-router-dom": "^6.27.0",
-    "react-tinder-card": "^1.6.4"
+    "react-tinder-card": "^1.6.4",
+    "styled-components": "^6.1.13"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "@babel/preset-react": "^7.25.9",
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
-    "@vitejs/plugin-react": "^4.2.1",
-    "babel-jest": "^29.7.0",
-    "eslint": "^8.55.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "axios-mock-adapter": "^2.1.0",
+    "eslint": "^8.45.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "jest": "^29.6.4",
-    "vite": "^5.0.8"
+    "jsdom": "^20.0.0",
+    "vite": "^5.0.8",
+    "vitest": "^2.1.8"
   }
 }

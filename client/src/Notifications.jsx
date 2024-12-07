@@ -1,3 +1,5 @@
+// notifications component
+// imports
 import React, { useEffect, useState } from "react";
 import notificationManager from "./NotificationManager";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +10,7 @@ function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const username = Cookies.get("username");
+  const username = Cookies.get("username"); // get the username from cookies
 
   useEffect(() => {
     const handleNewNotification = (notification) => {
@@ -17,7 +19,7 @@ function Notifications() {
 
     notificationManager.addObserver(handleNewNotification);
 
-    // Load initial notifications
+    // load notifications from the notification manager(observer)
     setNotifications(notificationManager.getNotifications());
 
     return () => {
@@ -33,7 +35,7 @@ function Notifications() {
       }
 
       try {
-        const response = await axios.get("http://localhost:3007/interview-notifications", {
+        const response = await axios.get("http://localhost:3007/interview-notifications", { // 3007 now
           params: { username },
         });
 
@@ -58,7 +60,7 @@ function Notifications() {
           setError(response.data.message || "Failed to fetch interview notifications.");
         }
       } catch (err) {
-        console.error("Error fetching interview notifications:", err);
+        console.error("Error fetching interview notifications:", err); // log the error
         setError("An error occurred while fetching your notifications.");
       }
     };
@@ -106,18 +108,19 @@ function Notifications() {
   );
 }
 
+// styles
 const styles = {
   page: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #FFA500, #0056b3)", // Fading orange-to-blue gradient
-    fontFamily: "'Poppins', sans-serif", // Modern font
+    background: "linear-gradient(135deg, #FFA500, #0056b3)", //  gradient
+    fontFamily: "'Poppins', sans-serif", // poppins
   },
   container: {
     width: "600px",
-    backgroundColor: "white", // White notifications table
+    backgroundColor: "white", // white box 
     color: "#333",
     borderRadius: "10px",
     padding: "30px",
@@ -127,12 +130,12 @@ const styles = {
   title: {
     fontSize: "2.5rem",
     marginBottom: "20px",
-    color: "#0056b3", // Deep blue title
+    color: "#0056b3", // blue title
   },
   backButton: {
     marginBottom: "20px",
     padding: "10px 20px",
-    backgroundColor: "#4caf50", // Green
+    backgroundColor: "#4caf50", // green for back button
     color: "white",
     border: "none",
     borderRadius: "5px",
@@ -168,14 +171,14 @@ const styles = {
     padding: "10px 20px",
     fontSize: "1rem",
     color: "white",
-    backgroundColor: "#e63946", // Red for clear button
+    backgroundColor: "#e63946", // red for clear button
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
   },
   error: {
     fontSize: "1.2rem",
-    color: "#e63946", // Red for errors
+    color: "#e63946", // red
   },
 };
 

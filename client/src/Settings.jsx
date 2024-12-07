@@ -1,8 +1,11 @@
+// settings component, dark mode, languages, font size, log out, delete account
+// imports
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import notificationManager from "./NotificationManager";
 
+// avilable options for font size
 const fontSizeMap = {
   Small: "14px",
   Medium: "18px",
@@ -35,7 +38,8 @@ const Settings = () => {
       type: "settings",
     });
   };
-
+ 
+  // languages
   const handleLanguageChange = (e) => {
     const newLanguage = e.target.value;
     setLanguage(newLanguage);
@@ -46,6 +50,7 @@ const Settings = () => {
     });
   };
 
+  // font size change
   const handleFontSizeChange = (e) => {
     const selectedFontSize = e.target.value;
     setFontSize(selectedFontSize);
@@ -56,6 +61,7 @@ const Settings = () => {
     });
   };
 
+  // log out
   const handleLogOut = () => {
     Cookies.remove("username");
     notificationManager.addNotification({
@@ -65,11 +71,12 @@ const Settings = () => {
     navigate("/login");
   };
 
+  // delete account
   const handleDeleteAccount = async () => {
     if (window.confirm("Are you sure you want to delete your account?")) {
       const username = Cookies.get("username");
       try {
-        const response = await fetch("http://localhost:3003/delete-account", {
+        const response = await fetch("http://localhost:3003/delete-account", { // 3003 now
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username }),
@@ -89,7 +96,7 @@ const Settings = () => {
           });
         }
       } catch (error) {
-        console.error("Error deleting account:", error);
+        console.error("Error deleting account:", error); // error handling
         notificationManager.addNotification({
           message: "An error occurred while deleting your account.",
           type: "error",
@@ -100,7 +107,7 @@ const Settings = () => {
 
   return (
     <div style={styles.page}>
-      {/* Arrow Button */}
+  
       <div style={styles.arrowContainer} onClick={() => navigate("/home")}>
         ←
       </div>
@@ -165,6 +172,7 @@ const Settings = () => {
   );
 };
 
+// styles
 const styles = {
   page: {
     display: "flex",
@@ -191,7 +199,7 @@ const styles = {
     color: "var(--table-text-color)",
     borderRadius: "10px",
     padding: "20px",
-    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)", // shadow
     textAlign: "center",
   },
   title: {
@@ -226,7 +234,7 @@ const styles = {
   logoutButton: {
     marginTop: "10px",
     padding: "10px 20px",
-    backgroundColor: "#4caf50",
+    backgroundColor: "#4caf50", // green
     color: "white",
     border: "none",
     borderRadius: "5px",
@@ -235,7 +243,7 @@ const styles = {
   deleteButton: {
     marginTop: "10px",
     padding: "10px 20px",
-    backgroundColor: "#e63946",
+    backgroundColor: "#e63946",// red
     color: "white",
     border: "none",
     borderRadius: "5px",

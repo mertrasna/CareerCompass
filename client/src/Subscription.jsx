@@ -1,9 +1,12 @@
+// subscripton page
+// imports
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+
 function Subscription() {
-  const [subscriptionStatus, setSubscriptionStatus] = useState("loading");
+  const [subscriptionStatus, setSubscriptionStatus] = useState("loading"); // loading state
   const [error, setError] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
 
@@ -17,7 +20,7 @@ function Subscription() {
       }
 
       try {
-        const response = await axios.get("http://localhost:3004/subscription", {
+        const response = await axios.get("http://localhost:3004/subscription", { // 3004 now
           params: { username },
         });
 
@@ -36,6 +39,7 @@ function Subscription() {
     fetchSubscriptionType();
   }, []);
 
+  // cancel subscription
   const handleCancelSubscription = async () => {
     const username = Cookies.get("username");
     if (!username) {
@@ -50,7 +54,7 @@ function Subscription() {
     setIsCancelling(true);
 
     try {
-      const response = await axios.post("http://localhost:3004/cancel-subscription", {
+      const response = await axios.post("http://localhost:3004/cancel-subscription", { // 3004
         username,
       });
 
@@ -68,6 +72,7 @@ function Subscription() {
     }
   };
 
+  // if its loading
   if (subscriptionStatus === "loading") {
     return (
       <div style={styles.page}>
@@ -77,6 +82,7 @@ function Subscription() {
     );
   }
 
+  // error handling
   if (error) {
     return (
       <div style={styles.page}>
@@ -86,6 +92,7 @@ function Subscription() {
     );
   }
 
+  // if subscription is basic
   if (subscriptionStatus === "basic") {
     return (
       <div style={styles.page}>
@@ -113,6 +120,7 @@ function Subscription() {
     );
   }
 
+  // if subscription is premium
   if (subscriptionStatus === "premium") {
     return (
       <div style={styles.page}>
@@ -152,6 +160,7 @@ function Subscription() {
   );
 }
 
+// styles
 const styles = {
   page: {
     display: "flex",

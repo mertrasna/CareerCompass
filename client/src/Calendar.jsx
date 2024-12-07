@@ -1,3 +1,5 @@
+// calendar component
+// imports
 import React, { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -18,7 +20,7 @@ function Calendar() {
       }
 
       try {
-        const response = await axios.get("http://localhost:3007/interview-schedule", {
+        const response = await axios.get("http://localhost:3007/interview-schedule", { // 3007 now
           params: { username },
         });
 
@@ -64,18 +66,19 @@ function Calendar() {
   );
 }
 
+// styles
 const styles = {
   page: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #FFA500, #0056b3)", // Fading orange-to-blue gradient
-    fontFamily: "'Poppins', sans-serif", // Modern font
+    background: "linear-gradient(135deg, #FFA500, #0056b3)", //  gradient fade
+    fontFamily: "'Poppins', sans-serif", // poppinss
   },
   container: {
     width: "800px",
-    backgroundColor: "white", // White calendar container
+    backgroundColor: "white", // white box
     color: "#333",
     borderRadius: "10px",
     padding: "30px",
@@ -85,11 +88,11 @@ const styles = {
   title: {
     fontSize: "2.5rem",
     marginBottom: "20px",
-    color: "#0056b3", // Deep blue title
+    color: "#0056b3", // blue title
   },
   error: {
     fontSize: "1.2rem",
-    color: "#e63946", // Red for errors
+    color: "#e63946", // red
   },
 };
 

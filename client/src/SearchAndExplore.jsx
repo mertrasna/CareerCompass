@@ -1,3 +1,6 @@
+// its for saved jobes now we can see the saved jobs in this page
+
+// imports
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -10,7 +13,7 @@ function SearchAndExplore() {
 
   useEffect(() => {
     if (!username) {
-      console.log("User not logged in. Please log in to proceed.");
+      console.log("User not logged in. Please log in to proceed."); // cheking if the user is logged in
       return;
     }
 
@@ -51,7 +54,7 @@ function SearchAndExplore() {
       <div style={styles.container}>
         <h1 style={styles.title}>Your Saved Jobs</h1>
 
-        {/* Search Bar */}
+        
         <div style={styles.searchBar}>
           <input
             type="text"
@@ -62,7 +65,7 @@ function SearchAndExplore() {
           />
         </div>
 
-        {/* Job List */}
+        
         <div style={styles.jobList}>
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job) => (
@@ -92,14 +95,15 @@ function SearchAndExplore() {
   );
 }
 
+// styles
 const styles = {
   page: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #FFA500, #0056b3)", // Fading orange-to-blue gradient
-    fontFamily: "'Poppins', sans-serif", // Modern font
+    background: "linear-gradient(135deg, #FFA500, #0056b3)", // gradient
+    fontFamily: "'Poppins', sans-serif", // poppins, might be changed
     padding: "20px",
   },
   container: {
@@ -129,14 +133,14 @@ const styles = {
   },
   jobList: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", // Smaller, compact two-column layout
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", 
     gap: "15px",
   },
   jobCard: {
     border: "1px solid orange",
     borderRadius: "10px",
     padding: "15px",
-    backgroundColor: "#fefefe", // Subtle white background
+    backgroundColor: "#fefefe", // white background
     boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
     textAlign: "left",
   },

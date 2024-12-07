@@ -1,36 +1,37 @@
+// observer pattern for notifications
 import Cookies from "js-cookie";
 
 class NotificationManager {
   constructor() {
-    this.observers = []; // List of registered observers
+    this.observers = []; // the list of registered obsv
   }
 
-  // Add a new observer
+  // adding an observer
   addObserver(observer) {
-    console.log("Observer added:", observer); // Debug log
+    console.log("Observer added:", observer); // debug log
     this.observers.push(observer);
   }
 
-  // Remove an observer
+  // removing an observer
   removeObserver(observer) {
     
-    console.log("Observer removed:", observer); // Debug log
+    console.log("Observer removed:", observer); // debug log
     this.observers = this.observers.filter((obs) => obs !== observer);
   }
 
-  // Add a new notification
+  // add notification
   addNotification(notification) {
     const updatedNotifications = this.getNotifications();
     const exists = updatedNotifications.some(
       (n) => n.message === notification.message && n.type === notification.type
     );
 
-    if (!exists) {
+    if (!exists) { // check if the notification already exists
       updatedNotifications.push(notification);
       Cookies.set("notifications", JSON.stringify(updatedNotifications), { expires: 7 });
       console.log("Notification added to cookies and system:", notification.message);
 
-      // Send notification to the server for persistence/logging
+      // send notification to the server
       fetch("http://localhost:3007/log-notification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,19 +44,19 @@ class NotificationManager {
     }
   }
 
-  // Notify all observers about a change
+  // notifiying observers
   notifyObservers(notification) {
     console.log("Notifying observers:", notification); // Debug log
     this.observers.forEach((observer) => observer(notification));
   }
 
-  // Retrieve notifications from cookies
+  // #get notifications from cookies
   getNotifications() {
     try {
       const savedNotifications = Cookies.get("notifications");
       const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
       
-      // Log current notifications to the terminal
+      // for the console
       console.log("Current notifications loaded from cookies:", notifications);
 
       return notifications;
@@ -65,7 +66,7 @@ class NotificationManager {
     }
   }
 
-  // Clear all notifications
+  // clear notifications
   clearNotifications() {
     console.log("Clearing all notifications"); // Debug log
     Cookies.remove("notifications");
@@ -76,6 +77,6 @@ class NotificationManager {
   }
 }
 
-// Singleton instance
+
 const notificationManager = new NotificationManager();
 export default notificationManager;
